@@ -16,13 +16,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   (function() {
 
+    var apiRoot = 'https://api.auburnalabama.org/pressrelease/';
     var categoryList = [
-      {name: 'top_stories', title: 'Top Stories'},
-      {name: 'doodles', title: 'Doodles'},
-      {name: 'chrome', title: 'Chrome'},
-      {name: 'search', title: 'Search'},
-      {name: 'shopping_payments', title: 'Shopping & Payments'},
-      {name: 'nonprofits', title: 'Nonprofits'}
+      { id: 0, path: 'frontpage', name: 'top_stories', title: 'Top Stories'},
+      { id: 3, path: 'list/Office of the City Manager/12', name: 'Office of the City Manager', title: 'From City Manager'},
+      { id: 4, path: 'list/Parks and Recreation/12', name: 'Parks and Recreation', title: 'Parks and Recreation'},
+      //{ id: 5, path: 'list/Public Safety - Police/12', name: 'Public Safety - Police', title: 'Police'},
+      { id: 6, path: 'list/Planning/12', name: 'Planning', title: 'Planning'},
+      { id: 7, path: 'list/Public Works/12', name: 'Public Works', title: 'Public Works'},
+      { id: 8, path: 'list/Economic Development/12', name: 'Economic Development', title: 'Economic Development'}
     ];
 
     var textarea = document.createElement('textarea');
@@ -80,7 +82,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _computeArticle: function(categoryItems, articleId) {
         for (var i = 0; i < categoryItems.length; ++i) {
           var article = categoryItems[i];
-          if (article.id === articleId) {
+          if (article.id == articleId) {
             return article;
           }
         }
@@ -94,9 +96,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this._setFailure(false);
           return;
         }
-        this._fetch('/data/articles/' + article.id + '.html',
+
+        if (!article.html && article.content) {
+          this.set('article.html', this._formatHTML(article.content))
+        }
+
+        this._fetch(apiRoot + article.id,
           function(response) {
-            this.set('article.html', this._formatHTML(response));
+            var responseArticle = reponse;
+            this.set('article.html', this._formatHTML(responseArticle.PressRelease));
           }.bind(this),
           1 /* attempts */, true /* isRaw */);
       },
@@ -117,7 +125,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this._setFailure(false);
           return;
         }
-        this._fetch('/data/' + category.name + '.json',
+        this._fetch(apiRoot + category.path,
           function(response) {
             this.set('category.items', this._parseCategoryItems(response));
           }.bind(this),
@@ -129,16 +137,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         for (var i = 0, item; item = response[i]; ++i) {
           items.push({
-            headline: this._unescapeText(item.title),
+            headline: this._unescapeText(item.Title),
             href: this._getItemHref(item),
-            id: item.id,
+            id: item.PressReleaseID,
             imageUrl: this._getItemImage(item),
-            placeholder: item.placeholder,
-            category: item.category,
-            timeAgo: this._timeAgo(new Date(item.time).getTime()),
-            author: item.author,
-            summary: this._trimRight(item.summary, 100),
-            readTime: Math.max(2, Math.round(item.contentLength / 3000)) + ' min read'
+            placeholder: item.placeholder || "data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAAA8AAD/4QMxaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLwA8P3hwYWNrZXQgYmVnaW49Iu+7vyIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/PiA8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJBZG9iZSBYTVAgQ29yZSA1LjYtYzExMSA3OS4xNTgzMjUsIDIwMTUvMDkvMTAtMDE6MTA6MjAgICAgICAgICI+IDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+IDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIiB4bWxuczpzdFJlZj0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL1Jlc291cmNlUmVmIyIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjJFNTQzRDI0QTM4RTExRTY5NjdCRDcxN0ZDQzkwNzU3IiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjJFNTQzRDIzQTM4RTExRTY5NjdCRDcxN0ZDQzkwNzU3IiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCBDQyAyMDE1IChNYWNpbnRvc2gpIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6MUYyN0U2RkRBMzg3MTFFNjk2N0JENzE3RkNDOTA3NTciIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MUYyN0U2RkVBMzg3MTFFNjk2N0JENzE3RkNDOTA3NTciLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz7/7gAmQWRvYmUAZMAAAAABAwAVBAMGCg0AAATiAAAFEgAABUsAAAV4/9sAhAAGBAQEBQQGBQUGCQYFBgkLCAYGCAsMCgoLCgoMEAwMDAwMDBAMDg8QDw4MExMUFBMTHBsbGxwfHx8fHx8fHx8fAQcHBw0MDRgQEBgaFREVGh8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx//wgARCAAGAAoDAREAAhEBAxEB/8QAhwABAQAAAAAAAAAAAAAAAAAABQYBAQAAAAAAAAAAAAAAAAAAAAAQAAIDAQAAAAAAAAAAAAAAABADAAEEJBEAAQMDBQAAAAAAAAAAAAAAAgABEdESA0JiEzOjEgEAAAAAAAAAAAAAAAAAAAAQEwEAAgIDAQAAAAAAAAAAAAABEBEhMQBRkaH/2gAMAwEAAhEDEQAAAa0WP//aAAgBAQABBQLWp97OKf/aAAgBAgABBQIf/9oACAEDAAEFAh//2gAIAQICBj8CP//aAAgBAwIGPwI//9oACAEBAQY/ArgzEOOG5QZim3bDLT1eVF//2gAIAQEDAT8hYJl0gXNk3nWYR//aAAgBAgMBPyGP/9oACAEDAwE/IY//2gAMAwEAAhEDEQAAEEP/2gAIAQEDAT8Qf2TjokQgNtX5fTw4f//aAAgBAgMBPxCP/9oACAEDAwE/EI//2Q==",
+            category: item.List ? item.List.ListName : '',
+            timeAgo: this._timeAgo(new Date(item.DateAdded).getTime()),
+            author: item.ContactPerson,
+            summary: this._trimRight(item.Summary, 100),
+            content: item.PressRelease,
+            readTime: Math.max(1, Math.round(item.SearchableContent.length / 3000)) + ' min read'
           });
         }
 
@@ -151,11 +160,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       _getItemHref: function(item) {
-        return item.id ? '/article/' + this.categoryName + '/' + encodeURIComponent(item.id) : null;
+        return item.List ? '/article/' + item.List.ListName + '/' + encodeURIComponent(item.PressReleaseID) : null;
       },
 
       _getItemImage: function(item) {
-        return item.imgSrc ? '/data/' + item.imgSrc : '';
+        return item.Picture ? 'https://static.auburnalabama.org/media/apps/news/' + item.Picture.PictureName : '';
       },
 
       _timeAgo: function(timestamp) {
@@ -202,6 +211,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         //   image.remove();
         // }
 
+        // Remove the stupid style tags
+        var styledElements = template.content.querySelectorAll('*[style]');
+        for (var i = 0; i < styledElements.length; i++) {
+          styledElements[i].removeAttribute('style');
+        }
+
         // Remove width/height attributes from all images.
         var images = template.content.querySelectorAll('img');
         for (var i = 0; i < images.length; ++i) {
@@ -210,7 +225,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           img.removeAttribute('height');
         }
 
-        return template.content.querySelector('.content').innerHTML;
+        return template.innerHTML;
       },
 
       // _isSameImageSrc: function(a, b) {

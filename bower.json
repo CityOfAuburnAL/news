@@ -14,7 +14,8 @@
     "iron-iconset-svg": "polymerelements/iron-iconset-svg#^1.0.0",
     "iron-pages": "polymerelements/iron-pages#^1.0.0",
     "iron-selector": "polymerelements/iron-selector#^1.0.0",
-    "paper-icon-button": "polymerelements/paper-icon-button#^1.0.0"
+    "paper-icon-button": "polymerelements/paper-icon-button#^1.0.0",
+    "paper-share-button": "MacTheZazou/paper-share-button#^1.1.1"
   },
   "devDependencies": {
     "web-component-tester": "^4.0.0"

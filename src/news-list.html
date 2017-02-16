@@ -12,7 +12,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/app-layout/app-grid/app-grid-style.html">
 
-<link rel="import" href="news-iframe.html">
 <link rel="import" href="news-list-featured-item.html">
 <link rel="import" href="news-list-item.html">
 <link rel="import" href="news-side-list.html">
@@ -66,17 +65,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       news-side-list {
         margin-bottom: 32px;
-      }
-
-      news-iframe {
-        width: 300px;
-        height: 250px;
-      }
-
-      .ad-container {
-        display: flex;
-        justify-content: center;
-        margin-bottom: 24px;
       }
 
       /* mobile */
@@ -153,31 +141,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </news-list-featured-item>
 
         <ul class="app-grid article-grid fade-in">
-          <template is="dom-repeat" items="[[_slice(category.items, 1, 5)]]">
+          <template is="dom-repeat" items="[[_slice(category.items, 1, 7)]]">
             <li>
               <news-list-item item="[[item]]"></news-list-item>
-            </li>
-          </template>
-        </ul>
-
-        <h3>Opinions</h3>
-        <ul class="opinions-grid fade-in">
-          <template is="dom-repeat" items="[[_slice(category.items, 5)]]">
-            <li>
-              <news-list-item horizontal item="[[item]]"></news-list-item>
             </li>
           </template>
         </ul>
       </div>
 
       <aside>
-        <div class="ad-container">
-          <news-iframe src="//rcm-na.amazon-adsystem.com/e/cm?o=1&p=12&l=ur1&f=ifr"></news-iframe>
-        </div>
         <news-side-list class="fade-in" items="[[_slice(category.items, 0, 3)]]">
           Most Read
         </news-side-list>
-        <news-side-list class="fade-in" featured items="[[_slice(category.items, 3, 9)]]">
+        <news-side-list class="fade-in" featured items="[[_slice(category.items, 7)]]">
           More Top Stories
         </news-side-list>
       </aside>
