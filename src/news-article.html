@@ -130,13 +130,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <div class="container" fade-in$="[[!loading]]" hidden$="[[failure]]">
       <article class="flex">
-        <amp-viewer id="ampViewer" src="[[_getArticleSrc(article.id)]]"></amp-viewer>
+        <amp-viewer id="ampViewer" src="[[_getArticleSrc(articleId)]]"></amp-viewer>
       </article>
 
       <aside>
-        <div class="ad-container">
-          <news-iframe src="//rcm-na.amazon-adsystem.com/e/cm?o=1&p=12&l=ur1&f=ifr"></news-iframe>
-        </div>
         <a href="#" class="share-link" aria-label="Send by email">
           <iron-icon icon="mail"></iron-icon> Email
         </a>
@@ -213,11 +210,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       _return: function(value) {
-        return value;
+        return decodeURIComponent(value);
       },
 
       _getArticleSrc: function(id) {
-        return id ? '/data/articles/' + id + '.html' : '';
+        return id ? 'https://static.auburnalabama.org/media/apps/amp/pressrelease/' + id + '.html' : '';
       }
 
     });
