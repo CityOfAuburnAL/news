@@ -16,5 +16,27 @@
     "manifest.json",
     "web.config",
     "bower_components/webcomponentsjs/webcomponents-lite.min.js"
-  ]
+  ],
+  "builds": [
+    {
+        "name": "es5",
+        "bundle": false,
+        "html": {
+            "minify": true
+        },
+        "css": {
+            "minify": true
+        },
+        "js": {
+            "minify": true,
+            "compile": true
+        },
+        "addServiceWorker": true
+    }
+  ],
+    "lint": {
+        "rules": [
+            "polymer-2"
+        ]
+    }
 }
