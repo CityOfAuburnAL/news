@@ -98,12 +98,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
 
         if (!article.html && article.content) {
-          this.set('article.html', this._formatHTML(article.content))
+          this.set('article.html', this._formatHTML(article.content));
+          return;
         }
 
         this._fetch(apiRoot + article.id,
           function(response) {
-            var responseArticle = reponse;
+            var responseArticle = JSON.parse(response)[0];
             this.set('article.html', this._formatHTML(responseArticle.PressRelease));
           }.bind(this),
           3 /* attempts */, true /* isRaw */);
