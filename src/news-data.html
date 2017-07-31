@@ -106,7 +106,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             var responseArticle = reponse;
             this.set('article.html', this._formatHTML(responseArticle.PressRelease));
           }.bind(this),
-          1 /* attempts */, true /* isRaw */);
+          3 /* attempts */, true /* isRaw */);
       },
 
       _computeCategory: function(categoryName) {
@@ -129,7 +129,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           function(response) {
             this.set('category.items', this._parseCategoryItems(response));
           }.bind(this),
-          attempts || 1 /* attempts */);
+          attempts || 2 /* attempts */);
       },
 
       _parseCategoryItems: function(response) {
@@ -145,6 +145,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             category: item.List ? item.List.ListName : '',
             timeAgo: this._timeAgo(new Date(item.DateAdded).getTime()),
             author: item.ContactPerson,
+            authorPhone: item.ContactPhone.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3'),
+            authorTitle: item.ContactTitle,
             summary: this._trimRight(item.Summary, 100),
             content: item.PressRelease,
             readTime: Math.max(1, Math.round(item.SearchableContent.length / 3000)) + ' min read'

@@ -135,7 +135,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
 
         header .logo {
-          margin-right: 40px;
+          /*margin-right: 40px; not needed with the city logo */
+        }
+        
+        header .homeLogo {
+          background: url('https://static.auburnalabama.org/media/citylogos/citylogo_invert-notext.png') center center;
+          background-repeat: no-repeat;
+          background-size: contain;
+          display: inline-block;
+          height: 40px;
+          float: right;
+          width: 40px;
+        }
+        header .homeLogo img {
+          height: 34.15px;
+          width: 40px;
         }
 
         header .date-line {
@@ -170,6 +184,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       @media (min-width: 768px) {
         .logo {
           font-size: 39px;
+        }
+        header .logo {
+          margin-left: 72px; /*needed because the city logo */
+        }
+        header .homeLogo {
+          background: url('https://static.auburnalabama.org/media/citylogos/logo-64x64.png') center center;
+          background-repeat: no-repeat;
+          display: inline-block;
+          height: 72px;
+          float: right;
+          width: 72px;
         }
 
         .logo-toolbar {
@@ -253,6 +278,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <div class="logo" main-title>
           <a href="/" aria-label$="[[_computeAppHomeLabel(appTitle)]]">[[appTitle]]</a>
         </div>
+        <a class="homeLogo" href="https://www.auburnalabama.org/"></a>
       </app-toolbar>
       <div class="date-line" role="heading">
         [[category.title]] <span aria-hidden="true">&nbsp;&middot;&nbsp;</span> [[_currentTime()]]
