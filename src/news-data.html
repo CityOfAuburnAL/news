@@ -150,6 +150,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             authorTitle: item.ContactTitle,
             summary: this._trimRight(item.Summary, 100),
             content: item.PressRelease,
+            mainPriority: item.MainPagePriority,
+            priority: item.Priority,
             readTime: Math.max(1, Math.round(item.SearchableContent.length / 3000)) + ' min read'
           });
         }

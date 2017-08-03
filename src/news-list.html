@@ -141,7 +141,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </news-list-featured-item>
 
         <ul class="app-grid article-grid fade-in">
-          <template is="dom-repeat" items="[[_slice(category.items, 1, 7)]]">
+          <template is="dom-repeat" items="[[_slice(category.items, 1, 12)]]" filter="_filterPriorityItems">
             <li>
               <news-list-item item="[[item]]"></news-list-item>
             </li>
@@ -153,7 +153,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <news-side-list class="fade-in" items="[[_slice(category.items, 0, 3)]]">
           Most Read
         </news-side-list>
-        <news-side-list class="fade-in" featured items="[[_slice(category.items, 7)]]">
+        <news-side-list class="fade-in" featured items="[[_filterMoreItems(category.items)]]">
           More Top Stories
         </news-side-list>
       </aside>
@@ -205,6 +205,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _getFeaturedItem: function(items) {
         return items ? items[0] : {};
+      },
+      _filterPriorityItems: function(item) {
+        return ((this.category.name == "top_stories") ||
+                  this.category.name == "Office of the City Manager" || item.priority);
+      },
+      _filterMoreItems: function(items) {
+        if (this.category.name != "top_stories" &&
+                  this.category.name != "Office of the City Manager" && items)
+          return items.filter((item) => { return !item.priority; });
       },
 
       _tryReconnect: function() {
