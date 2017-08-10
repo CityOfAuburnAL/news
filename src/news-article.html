@@ -243,9 +243,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _installListeners: function() {
         this._desktopMediaQuery = window.matchMedia('(min-width: 768px)');
-        this.addEventListener('touchstart', this._touchstart.bind(this));
-        this.addEventListener('touchmove', this._touchmove.bind(this));
-        this.addEventListener('touchend', this._touchend.bind(this));
+        try {
+          this.addEventListener('touchstart', this._touchstart.bind(this), { passive: true });
+          this.addEventListener('touchmove', this._touchmove.bind(this), { passive: true });
+          this.addEventListener('touchend', this._touchend.bind(this), { passive: true });
+        } catch(e) {
+          this.addEventListener('touchstart', this._touchstart.bind(this));
+          this.addEventListener('touchmove', this._touchmove.bind(this));
+          this.addEventListener('touchend', this._touchend.bind(this));
+        }
       },
 
       _touchstart: function(event) {

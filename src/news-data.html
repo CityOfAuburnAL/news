@@ -92,7 +92,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _fetchArticle: function(article, offline) {
         // Don't fail if we become offline but already have a cached version, or if there's
         // nothing to fetch, or if already loading.
-        if ((offline && article && article.html) || !article || this.loading) {
+        if ((article && article.html) || !article || this.loading) {
           this._setFailure(false);
           return;
         }
@@ -149,7 +149,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             authorPhone: item.ContactPhone.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3'),
             authorTitle: item.ContactTitle,
             summary: this._trimRight(item.Summary, 100),
-            content: item.PressRelease,
+            html: this._formatHTML(item.PressRelease),
             mainPriority: item.MainPagePriority,
             priority: item.Priority,
             readTime: Math.max(1, Math.round(item.SearchableContent.length / 3000)) + ' min read'
