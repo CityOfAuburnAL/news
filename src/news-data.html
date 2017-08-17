@@ -19,8 +19,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     var apiRoot = 'https://api.auburnalabama.org/pressrelease/';
     var categoryList = [
       { id: 0, path: 'frontpage', name: 'top_stories', title: 'Top Stories'},
-      { id: 3, path: 'list/Office of the City Manager/12', name: 'Office of the City Manager', title: 'From City Manager'},
-      { id: 4, path: 'list/Parks and Recreation/12', name: 'Parks and Recreation', title: 'Parks and Recreation'},
+      { id: 3, path: 'list/Office of the City Manager/50', name: 'Office of the City Manager', title: 'From City Manager'},
+      { id: 4, path: 'list/Parks and Recreation/24', name: 'Parks and Recreation', title: 'Parks and Recreation'},
       //{ id: 5, path: 'list/Public Safety - Police/12', name: 'Public Safety - Police', title: 'Police'},
       //{ id: 6, path: 'list/Planning/12', name: 'Planning', title: 'Planning'},
       { id: 7, path: 'list/Public Works/12', name: 'Public Works', title: 'Public Works'},
@@ -86,9 +86,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             return article;
           }
         }
-        return null;
+        return {
+          id: articleId
+        };
       },
-
+/*this is junk, it's designed to get the content or format the content but the content is returned and formatted with _fetchCategoryItems and the article is set with _computeArticle. I can't even get _computeArticle to trigger from a fetch in this method*/
       _fetchArticle: function(article, offline) {
         // Don't fail if we become offline but already have a cached version, or if there's
         // nothing to fetch, or if already loading.
@@ -96,7 +98,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this._setFailure(false);
           return;
         }
-
+/*
         if (!article.html && article.content) {
           this.set('article.html', this._formatHTML(article.content));
           return;
@@ -105,9 +107,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this._fetch(apiRoot + article.id,
           function(response) {
             var responseArticle = JSON.parse(response)[0];
-            this.set('article.html', this._formatHTML(responseArticle.PressRelease));
+            this.push('category.items', this._parseArticleItem(responseArticle));
           }.bind(this),
-          3 /* attempts */, true /* isRaw */);
+          3 , true);*/
       },
 
       _computeCategory: function(categoryName) {
@@ -137,7 +139,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var items = [];
 
         for (var i = 0, item; item = response[i]; ++i) {
-          items.push({
+          items.push(this._parseArticleItem(item));
+        }
+
+        return items;
+      },
+
+      _parseArticleItem: function(item) {
+        return {
             headline: this._unescapeText(item.Title),
             href: this._getItemHref(item),
             id: item.PressReleaseID,
@@ -153,10 +162,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             mainPriority: item.MainPagePriority,
             priority: item.Priority,
             readTime: Math.max(1, Math.round(item.SearchableContent.length / 3000)) + ' min read'
-          });
-        }
-
-        return items;
+          };
       },
 
       _unescapeText: function(text) {
