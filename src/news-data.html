@@ -91,6 +91,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         };
       },
 /*this is junk, it's designed to get the content or format the content but the content is returned and formatted with _fetchCategoryItems and the article is set with _computeArticle. I can't even get _computeArticle to trigger from a fetch in this method*/
+/*got some junk working...*/
       _fetchArticle: function(article, offline) {
         // Don't fail if we become offline but already have a cached version, or if there's
         // nothing to fetch, or if already loading.
@@ -98,7 +99,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this._setFailure(false);
           return;
         }
-/*
+        
         if (!article.html && article.content) {
           this.set('article.html', this._formatHTML(article.content));
           return;
@@ -107,9 +108,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this._fetch(apiRoot + article.id,
           function(response) {
             var responseArticle = JSON.parse(response)[0];
-            this.push('category.items', this._parseArticleItem(responseArticle));
+            var parsedArticle = this._parseArticleItem(responseArticle);
+            this.push('category.items', parsedArticle);
+            this.set('articleId', parsedArticle.id);
           }.bind(this),
-          3 , true);*/
+          3 , true);
       },
 
       _computeCategory: function(categoryName) {
