@@ -141,7 +141,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </news-list-featured-item>
 
         <ul class="app-grid article-grid fade-in">
-          <template is="dom-repeat" items="[[_slice(category.items, 1, 12)]]" filter="_filterPriorityItems">
+          <template is="dom-repeat" items="[[_slice(category.items, 1, 50)]]" filter="_filterPriorityItems">
             <li>
               <news-list-item item="[[item]]"></news-list-item>
             </li>
@@ -153,7 +153,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <news-side-list class="fade-in" items="[[_slice(category.items, 0, 3)]]">
           Most Read
         </news-side-list>
-        <news-side-list class="fade-in" featured items="[[_filterMoreItems(category.items)]]">
+        <news-side-list class="fade-in" featured items="[[_slice(category.items, 0, 47)]]">
           More Top Stories
         </news-side-list>
       </aside>
