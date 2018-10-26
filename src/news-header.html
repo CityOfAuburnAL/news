@@ -103,8 +103,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         margin-right: 40px;
       }
 
-      :host([page=list]) .sticky-nav paper-icon-button[icon=mail],
-      :host([page=list]) .sticky-nav paper-icon-button[icon=share] {
+      :host([page=list]) .sticky-nav paper-share-button {
         display: none;
       }
 
@@ -136,7 +135,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
 
         header .logo {
-          margin-right: 40px;
+          /*margin-right: 40px; not needed with the city logo */
+        }
+        
+        header .homeLogo {
+          background: url('https://static.auburnalabama.org/media/citylogos/citylogo_invert-notext.png') center center;
+          background-repeat: no-repeat;
+          background-size: contain;
+          display: inline-block;
+          height: 40px;
+          float: right;
+          width: 40px;
+        }
+        header .homeLogo img {
+          height: 34.15px;
+          width: 40px;
         }
 
         header .date-line {
@@ -171,6 +184,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       @media (min-width: 768px) {
         .logo {
           font-size: 39px;
+        }
+        header .logo {
+          margin-left: 72px; /*needed because the city logo */
+        }
+        header .homeLogo {
+          background: url('https://static.auburnalabama.org/media/citylogos/logo-64x64.png') center center;
+          background-repeat: no-repeat;
+          display: inline-block;
+          height: 72px;
+          float: right;
+          width: 72px;
         }
 
         .logo-toolbar {
@@ -254,6 +278,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <div class="logo" main-title>
           <a href="/" aria-label$="[[_computeAppHomeLabel(appTitle)]]">[[appTitle]]</a>
         </div>
+        <a class="homeLogo" aria-label="City of Auburn Website" href="https://www.auburnalabama.org/"></a>
       </app-toolbar>
       <div class="date-line" role="heading">
         [[category.title]] <span aria-hidden="true">&nbsp;&middot;&nbsp;</span> [[_currentTime()]]
@@ -287,8 +312,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <content></content>
           </div>
         </div>
-        <paper-icon-button icon="mail" aria-label="Send by mail"></paper-icon-button>
-        <paper-icon-button icon="share" aria-label="Share on social networks"></paper-icon-button>
+        <paper-share-button id="psb" facebook google twitter email url="[[shareUrl]]"></paper-share-button>
       </app-toolbar>
       <div class="sticky-nav-menu" shown$="[[drawerOpened]]">
         <iron-selector class="grid-container" role="navigation"
@@ -314,7 +338,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         page: {
           type: String,
-          reflectToAttribute: true
+          reflectToAttribute: true,
+          observer: '_setShare'
         },
 
         categories: Array,
@@ -353,6 +378,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _getScrollThreshold: function(smallScreen) {
         return smallScreen ? window.innerHeight - 64 : 162;
+      },
+      
+      _setShare: function(page) {
+        if (page == "article" || this.page == 'article') {
+          this.set('shareUrl', window.location.href);
+          try {
+            this.$.psb.$.shareMenu.set('horizontalAlign', 'right');
+          } catch (e) {//hack but it's being lazy loaded so...
+            setTimeout(this._setShare.bind(this), 500);
+          }
+        } 
       },
 
       _computeAppHomeLabel: function(appTitle) {

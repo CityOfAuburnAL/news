@@ -10,10 +10,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
-<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 
 <link rel="import" href="news-article-cover.html">
-<link rel="import" href="news-iframe.html">
 <link rel="import" href="news-side-list.html">
 
 <dom-module id="news-article">
@@ -53,6 +51,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       #content {
         font-size: 16px;
         line-height: 26px;
+        padding: 2em 0;
       }
 
       #content img {
@@ -84,15 +83,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         margin-bottom: 32px;
       }
 
-      news-iframe {
-        width: 300px;
-        height: 250px;
-      }
-
       .share-link {
         display: inline-block;
         margin-right: 24px;
         margin-bottom: 24px;
+        padding-right: 12px;
         color: inherit;
         font-size: 11px;
         font-weight: bold;
@@ -101,12 +96,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       .share-link iron-icon {
         margin-right: 8px;
-      }
-
-      .ad-container {
-        display: flex;
-        justify-content: center;
-        margin-bottom: 24px;
       }
 
       /* mobile */
@@ -172,14 +161,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </article>
 
       <aside>
-        <div class="ad-container">
-          <news-iframe src="//rcm-na.amazon-adsystem.com/e/cm?o=1&p=12&l=ur1&f=ifr"></news-iframe>
-        </div>
-        <a href="#" class="share-link" aria-label="Send by email">
-          <iron-icon icon="mail"></iron-icon> Email
-        </a>
-        <a href="#" class="share-link" aria-label="Share on social networks">
-          <iron-icon icon="share"></iron-icon> Share
+        <a href="#" on-tap="_shareWrap" class="share-link" aria-label="Share on social networks">
+          <paper-share-button facebook google twitter email url="[[_share(article)]]"></paper-share-button> Share
         </a>
         <news-side-list class="fade-in" items="[[_slice(category.items, 0, 3)]]">
           Most Read
@@ -260,9 +243,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _installListeners: function() {
         this._desktopMediaQuery = window.matchMedia('(min-width: 768px)');
-        this.addEventListener('touchstart', this._touchstart.bind(this));
-        this.addEventListener('touchmove', this._touchmove.bind(this));
-        this.addEventListener('touchend', this._touchend.bind(this));
+        try {
+          this.addEventListener('touchstart', this._touchstart.bind(this), { passive: true });
+          this.addEventListener('touchmove', this._touchmove.bind(this), { passive: true });
+          this.addEventListener('touchend', this._touchend.bind(this), { passive: true });
+        } catch(e) {
+          this.addEventListener('touchstart', this._touchstart.bind(this));
+          this.addEventListener('touchmove', this._touchmove.bind(this));
+          this.addEventListener('touchend', this._touchend.bind(this));
+        }
       },
 
       _touchstart: function(event) {
@@ -430,6 +419,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _return: function(value) {
         return value;
+      },
+
+      _share: function(article) {
+        return window.location.href;
+      },
+
+      _shareWrap: function(evt) {
+        if (evt.srcElement.tagName == "A") {
+          var psb = evt.target.querySelector('paper-share-button');
+          psb.$.shareMenu.open();
+        }
       },
 
       _computePreviousArticle: function(categoryItems, article) {
