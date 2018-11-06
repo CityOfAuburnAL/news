@@ -1,25 +1,25 @@
-<!--
+/**
 @license
-Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
 This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
 The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
+*/
+import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 
-<link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/app-route/app-route.html">
-<link rel="import" href="../bower_components/app-layout/app-grid/app-grid-style.html">
+import '@polymer/app-route/app-route.js';
+import '@polymer/app-layout/app-grid/app-grid-style.js';
+import './news-list-featured-item.js';
+import './news-list-item.js';
+import './news-side-list.js';
+import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
+import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 
-<link rel="import" href="news-list-featured-item.html">
-<link rel="import" href="news-list-item.html">
-<link rel="import" href="news-side-list.html">
-
-<dom-module id="news-list">
-
-  <template>
-
+class NewsList extends PolymerElement {
+  static get template() {
+    return html`
     <style include="app-grid-style">
 
       :host {
@@ -40,7 +40,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       .content {
-        @apply(--layout-flex);
+        @apply --layout-flex;
       }
 
       .article-grid,
@@ -59,7 +59,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       h3 {
-        @apply(--app-sub-section-headline);
+        @apply --app-sub-section-headline;
         margin: 24px 0;
       }
 
@@ -94,8 +94,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
 
         .opinions-grid {
-          @apply(--layout-horizontal);
-          @apply(--layout-wrap);
+          @apply --layout-horizontal;
+          @apply --layout-wrap;
         }
 
         .opinions-grid li {
@@ -112,7 +112,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       /* desktop large */
       @media (min-width: 1310px) {
         .container {
-          @apply(--layout-horizontal);
+          @apply --layout-horizontal;
         }
 
         .content {
@@ -133,7 +133,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <app-route
         route="[[route]]"
         pattern="/:category"
-        data="{{_routeData}}"></app-route>
+        data="{{routeData}}"></app-route>
 
     <div class="container" fade-in$="[[!loading]]" hidden$="[[failure]]">
       <div class="content">
@@ -141,11 +141,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </news-list-featured-item>
 
         <ul class="app-grid article-grid fade-in">
-          <template is="dom-repeat" items="[[_slice(category.items, 1, 50)]]" filter="_filterPriorityItems">
-            <li>
-              <news-list-item item="[[item]]"></news-list-item>
-            </li>
-          </template>
+          <dom-repeat items="[[_slice(category.items, 1, 50)]]" filter="_filterPriorityItems">
+            <template>
+              <li>
+                <news-list-item item="[[item]]"></news-list-item>
+              </li>
+            </template>
+          </dom-repeat>
         </ul>
       </div>
 
@@ -159,7 +161,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <iron-icon icon="search"></iron-icon> Search All News Stories
           </a>
         </section>
-        <news-side-list class="fade-in" featured items="[[_slice(category.items, 0, 47)]]">
+        <news-side-list class="fade-in" featured items="[[_slice(category.items, 3, 47)]]">
           More Top Stories
         </news-side-list>
       </aside>
@@ -169,77 +171,77 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         hidden$="[[!failure]]"
         offline="[[offline]]"
         on-try-reconnect="_tryReconnect"></news-network-warning>
+`;
+  }
 
-  </template>
+  static get is() { return 'news-list'; }
 
-  <script>
+  static get properties() { return {
 
-    Polymer({
+    route: Object,
 
-      is: 'news-list',
+    category: Object,
 
-      properties: {
+    offline: Boolean,
 
-        route: Object,
+    failure: Boolean,
 
-        category: Object,
+    categoryName: {
+      type: Boolean,
+      computed: '_return(routeData.category)',
+      notify: true
+    },
 
-        offline: Boolean,
+    routeData: Object,
 
-        failure: Boolean,
+    loading: Boolean
 
-        categoryName: {
-          type: Boolean,
-          computed: '_return(_routeData.category)',
-          notify: true
-        },
+  }}
 
-        _routeData: Object
+  connectedCallback() {
+    super.connectedCallback();
+    this._boundResizeHandler = this._resizeHandler.bind(this);
+    window.addEventListener('resize', this._boundResizeHandler);
+  }
 
-      },
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.removeEventListener('resize', this._boundResizeHandler);
+  }
 
-      _boundResizeHandler: null,
+  _getFeaturedItem(items) {
+    return items ? items[0] : {};
+  }
+  
+  _filterPriorityItems(item) {
+    return ((this.category.name == "top_stories") ||
+              this.category.name == "Office of the City Manager" || item.priority);
+  }
+  
+  _filterMoreItems(items) {
+    if (this.category.name != "top_stories" &&
+              this.category.name != "Office of the City Manager" && items)
+      return items.filter((item) => { return !item.priority; });
+  }
 
-      attached: function() {
-        this._boundResizeHandler = this._resizeHandler.bind(this);
-        window.addEventListener('resize', this._boundResizeHandler);
-      },
+  _tryReconnect() {
+    this.dispatchEvent(new CustomEvent('refresh-data', {bubbles: true, composed: true}));
+  }
 
-      detached: function() {
-        window.removeEventListener('resize', this._boundResizeHandler);
-      },
+  _resizeHandler() {
+    this._resizeDebouncer = Debouncer.debounce(this._resizeDebouncer,
+      timeOut.after(50), () => { this.updateStyles(); });
+  }
 
-      _getFeaturedItem: function(items) {
-        return items ? items[0] : {};
-      },
-      _filterPriorityItems: function(item) {
-        return ((this.category.name == "top_stories") ||
-                  this.category.name == "Office of the City Manager" || item.priority);
-      },
-      _filterMoreItems: function(items) {
-        if (this.category.name != "top_stories" &&
-                  this.category.name != "Office of the City Manager" && items)
-          return items.filter((item) => { return !item.priority; });
-      },
+  _slice(list, begin, end) {
+    if (list) {
+      return list.slice(begin, end);
+    }
+  }
 
-      _tryReconnect: function() {
-        this.fire('refresh-data');
-      },
+  _return(value) {
+    return value;
+  }
+}
 
-      _resizeHandler: function() {
-        this.debounce('_resize', this.updateStyles, 50);
-      },
-
-      _slice: function(list, begin, end) {
-        return list.slice(begin, end);
-      },
-
-      _return: function(value) {
-        return value;
-      }
-
-    });
-
-  </script>
-
-</dom-module>
+customElements.define(NewsList.is, NewsList);

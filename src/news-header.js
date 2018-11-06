@@ -1,25 +1,24 @@
-<!--
+/**
 @license
-Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
 This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
 The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
+*/
+import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 
-<link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
-<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+import '@polymer/app-layout/app-toolbar/app-toolbar.js';
+import '@polymer/iron-flex-layout/iron-flex-layout.js';
+import '@polymer/iron-selector/iron-selector.js';
 
-<dom-module id="news-header">
-
-  <template>
-
+class NewsHeader extends PolymerElement {
+  static get template() {
+    return html`
     <style>
 
-      paper-icon-button {
+      paper-icon-button, news-share {
         --paper-icon-button-ink-color: var(--app-nav-text-color);
         width: 40px;
       }
@@ -103,7 +102,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         margin-right: 40px;
       }
 
-      :host([page=list]) .sticky-nav paper-share-button {
+      :host([page=list]) .sticky-nav news-share,
+      :host([page=list]) .sticky-nav news-share {
         display: none;
       }
 
@@ -240,8 +240,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
 
         .sticky-nav-menu {
-          @apply(--layout-vertical);
-          @apply(--layout-center);
+          @apply --layout-vertical;
+          @apply --layout-center;
           position: absolute;
           left: 0;
           right: 0;
@@ -273,24 +273,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     -->
     <header>
       <app-toolbar class="logo-toolbar">
-        <paper-icon-button class="mobile-toggle-drawer-btn" icon="menu"
-            on-click="_toggleDrawer" aria-label="Main navigation"></paper-icon-button>
-        <div class="logo" main-title>
-          <a href="/" aria-label$="[[_computeAppHomeLabel(appTitle)]]">[[appTitle]]</a>
+        <paper-icon-button class="mobile-toggle-drawer-btn" icon="menu" on-click="_toggleDrawer" aria-label="Main navigation"></paper-icon-button>
+        <div class="logo" main-title="">
+          <a href="/" aria-label\$="[[_computeAppHomeLabel(appTitle)]]">[[appTitle]]</a>
         </div>
         <a class="homeLogo" aria-label="City of Auburn Website" href="https://www.auburnalabama.org/"></a>
       </app-toolbar>
       <div class="date-line" role="heading">
-        [[category.title]] <span aria-hidden="true">&nbsp;&middot;&nbsp;</span> [[_currentTime()]]
+        [[category.title]] <span aria-hidden="true">&nbsp;·&nbsp;</span> [[_currentTime()]]
       </div>
-      <template is="dom-if" if="[[!smallScreen]]">
-        <iron-selector role="navigation" class="menu-list" selected="[[category.name]]"
-            attr-for-selected="name">
-          <template is="dom-repeat" items="[[categories]]" as="category" initial-count="9">
-            <a name="[[category.name]]" href="/list/[[category.name]]">[[category.title]]</a>
-          </template>
-        </iron-selector>
-      </template>
+      <dom-if if="[[!smallScreen]]">
+        <template>
+          <iron-selector role="navigation" class="menu-list" selected="[[category.name]]" attr-for-selected="name">
+            <dom-repeat items="[[categories]]" as="category" initial-count="9">
+              <template>
+                <a name="[[category.name]]" href="/list/[[category.name]]">[[category.title]]</a>
+              </template>
+            </dom-repeat>
+          </iron-selector>
+        </template>
+      </dom-if>
     </header>
 
     <!--
@@ -298,105 +300,97 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     -->
     <app-box role="banner" class="sticky-nav" threshold="[[_getScrollThreshold(smallScreen)]]">
       <app-toolbar class="sticky-nav-toolbar">
-        <paper-icon-button
-          arial-label="Main navigation"
-          icon="[[_menuIcon(drawerOpened)]]" on-click="_toggleDrawer"></paper-icon-button>
+        <paper-icon-button arial-label="Main navigation" icon="[[_menuIcon(drawerOpened)]]" on-click="_toggleDrawer"></paper-icon-button>
         <div class="sticky-nav-center">
           <div class="logo">
-            <a href="/" aria-label$="[[_computeAppHomeLabel(appTitle)]]">[[appTitle]]</a>
+            <a href="/" aria-label\$="[[_computeAppHomeLabel(appTitle)]]">[[appTitle]]</a>
           </div>
           <div class="date-line" role="heading">
-            [[category.title]] <span aria-hidden="true">&nbsp; &middot; &nbsp;</span> [[_currentTime()]]
+            [[category.title]] <span aria-hidden="true">&nbsp; · &nbsp;</span> [[_currentTime()]]
           </div>
           <div class="article-headline">
-            <content></content>
+            <slot></slot>
           </div>
         </div>
-        <paper-share-button id="psb" facebook google twitter email url="[[shareUrl]]"></paper-share-button>
+        <news-share id="psb" facebook twitter reddit tumblr email url="[[shareUrl]]"></news-share>
       </app-toolbar>
-      <div class="sticky-nav-menu" shown$="[[drawerOpened]]">
-        <iron-selector class="grid-container" role="navigation"
-            selected="[[category.name]]" attr-for-selected="name">
-          <template is="dom-repeat" items="[[categories]]" as="category" initial-count="9">
-            <a name="[[category.name]]" href="/list/[[category.name]]">[[category.title]]</a>
-          </template>
+      <div class="sticky-nav-menu" shown\$="[[drawerOpened]]">
+        <iron-selector class="grid-container" role="navigation" selected="[[category.name]]" attr-for-selected="name">
+          <dom-repeat items="[[categories]]" as="category" initial-count="9">
+            <template>
+              <a name="[[category.name]]" href="/list/[[category.name]]">[[category.title]]</a>
+            </template>
+          </dom-repeat>
         </iron-selector>
       </div>
     </app-box>
+`;
+  }
 
-  </template>
+  static get is() { return 'news-header'; }
 
-  <script>
+  static get properties() { return {
 
-    Polymer({
+    appTitle: String,
 
-      is: 'news-header',
+    page: {
+      type: String,
+      reflectToAttribute: true,
+      observer: '_setShare'
+    },
 
-      properties: {
+    categories: Array,
 
-        appTitle: String,
+    category: Object,
 
-        page: {
-          type: String,
-          reflectToAttribute: true,
-          observer: '_setShare'
-        },
+    smallScreen: Boolean,
 
-        categories: Array,
+    drawerOpened: {
+      type: Boolean,
+      notify: true
+    }
 
-        category: Object,
+  }}
 
-        smallScreen: Boolean,
+  _menuIcon(drawerOpened) {
+    return drawerOpened ? 'close' : 'menu';
+  }
 
-        drawerOpened: {
-          type: Boolean,
-          notify: true
-        }
+  _currentTime() {
+    let monthNames = [
+      'January', 'February', 'March',
+      'April', 'May', 'June', 'July',
+      'August', 'September', 'October',
+      'November', 'December'
+    ];
 
-      },
+    let date = new Date();
 
-      _menuIcon: function(drawerOpened) {
-        return drawerOpened ? 'close' : 'menu';
-      },
+    return monthNames[date.getMonth()] + ' ' + date.getDate() + ', ' + date.getFullYear();
+  }
 
-      _currentTime: function() {
-        var monthNames = [
-          'January', 'February', 'March',
-          'April', 'May', 'June', 'July',
-          'August', 'September', 'October',
-          'November', 'December'
-        ];
+  _toggleDrawer() {
+    this.drawerOpened = !this.drawerOpened;
+  }
 
-        var date = new Date();
-
-        return monthNames[date.getMonth()] + ' ' + date.getDate() + ', ' + date.getFullYear();
-      },
-
-      _toggleDrawer: function() {
-        this.drawerOpened = !this.drawerOpened;
-      },
-
-      _getScrollThreshold: function(smallScreen) {
-        return smallScreen ? window.innerHeight - 64 : 162;
-      },
+  _getScrollThreshold(smallScreen) {
+    return smallScreen ? window.innerHeight - 64 : 162;
+  }
       
-      _setShare: function(page) {
-        if (page == "article" || this.page == 'article') {
-          this.set('shareUrl', window.location.href);
-          try {
-            this.$.psb.$.shareMenu.set('horizontalAlign', 'right');
-          } catch (e) {//hack but it's being lazy loaded so...
-            setTimeout(this._setShare.bind(this), 500);
-          }
-        } 
-      },
-
-      _computeAppHomeLabel: function(appTitle) {
-        return appTitle + ' Home';
+  _setShare(page) {
+    if (page == "article" || this.page == 'article') {
+      this.set('shareUrl', window.location.href);
+      try {
+        this.$.psb.$.shareMenu.set('horizontalAlign', 'right');
+      } catch (e) {//hack but it's being lazy loaded so...
+        setTimeout(this._setShare.bind(this), 500);
       }
+    } 
+  }
 
-    });
+  _computeAppHomeLabel(appTitle) {
+    return appTitle + ' Home';
+  }
+}
 
-  </script>
-
-</dom-module>
+customElements.define(NewsHeader.is, NewsHeader);
