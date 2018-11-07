@@ -52,6 +52,7 @@ class NewsArticle extends PolymerElement {
       #content {
         font-size: 16px;
         line-height: 26px;
+        margin-top: 1em;
       }
 
       #content img {
