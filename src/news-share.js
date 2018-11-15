@@ -205,7 +205,11 @@ class NewsShare extends PolymerElement {
     }}
 
     _share(event) {
-        var element = Polymer.dom(event).localTarget;
+        event.stopPropagation();
+        //var element = Polymer.dom(event).localTarget; Polymer-element doesn't have this functionality
+        var element = event.currentTarget;
+        element.icon = element.getAttribute('icon');
+        
         if (!this.url && this.autoUrl) {
             this.url = window.location.href;
         }

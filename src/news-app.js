@@ -18,6 +18,8 @@ import './news-nav.js';
 import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 import { scroll } from '@polymer/app-layout/helpers/helpers.js';
 
+import { updateMetadata } from 'pwa-helpers/metadata.js';
+
 class NewsApp extends PolymerElement {
   static get template() {
     return html`
@@ -287,13 +289,20 @@ class NewsApp extends PolymerElement {
     this._setMeta('property', 'og:title', document.title);
     this._setMeta('property', 'og:description', description || document.title);
     this._setMeta('property', 'og:url', document.location.href);
-    this._setMeta('property', 'og:image', this.baseURI + image);
+    this._setMeta('property', 'og:image', image);
 
     // Set twitter card metadata
     this._setMeta('property', 'twitter:title', document.title);
     this._setMeta('property', 'twitter:description', description || document.title);
     this._setMeta('property', 'twitter:url', document.location.href);
-    this._setMeta('property', 'twitter:image:src', this.baseURI + image);
+    this._setMeta('property', 'twitter:image:src', image);
+
+    updateMetadata({
+      title: document.title,
+      description: description || document.title,
+      url: document.location.href,
+      image: image
+    });
   }
 
   _setMeta(attrName, attrValue, content) {

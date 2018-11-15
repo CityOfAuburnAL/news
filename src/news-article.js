@@ -84,12 +84,6 @@ class NewsArticle extends PolymerElement {
         margin-bottom: 32px;
       }
 
-      news-gpt-ad {
-        display: block;
-        width: 300px;
-        height: 250px;
-      }
-
       .share-link {
         display: inline-block;
         margin-right: 24px;
