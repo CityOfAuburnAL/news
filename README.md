@@ -25,4 +25,9 @@ $ npm run serve:static
 
 ## Deploying
 
-Our [production deployment of NEWS](https://news.polymer-project.org/) is hosted on App Engine with Node.js. It can be deployed with [the same steps as PWA Starter Kit](https://polymer.github.io/pwa-starter-kit/building-and-deploying/#deploying-prpl-server).
+Deployed on \\webserver1\inetpub\nodejs\news
+web.config in the root, and server.js in the build file (source for these are in the \public\ folder)
+I did run npm install --save-dev prpl-server rendertron-middleware in the root but I'm not sure if it was required
+IISNode was installed and the site is in IIS which just routes to node express webserver
+
+prpl-server uses the three different builds for different browser needs and uses a proxy to render the page for certain bots like FaceBook scraper
