@@ -18,8 +18,6 @@ import './news-nav.js';
 import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 import { scroll } from '@polymer/app-layout/helpers/helpers.js';
 
-//import { updateMetadata } from 'pwa-helpers/metadata.js';
-
 class NewsApp extends PolymerElement {
   static get template() {
     return html`
@@ -299,14 +297,6 @@ class NewsApp extends PolymerElement {
     this._setMeta('name', 'twitter:description', description || document.title);
     this._setMeta('name', 'twitter:url', document.location.href);
     this._setMeta('name', 'twitter:image:src', image);
-
-    // I think this whole package isn't needed anymore
-    // updateMetadata({
-    //   title: document.title,
-    //   description: description || document.title,
-    //   url: document.location.href,
-    //   image: image
-    // });
   }
 
   _setMeta(attrName, attrValue, content) {
