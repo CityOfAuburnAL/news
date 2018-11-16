@@ -42,14 +42,13 @@ class NewsShare extends PolymerElement {
             vertical-offset="[[verticalOffset]]"
             no-overlap="[[noOverlap]]"
         >
-            <paper-icon-button icon="[[buttonIcon]]" slot="dropdown-trigger" alt="Share Menu"></paper-icon-button>
+            <span slot="dropdown-trigger" aria-label="Share on social networks">
+                <paper-icon-button icon="[[buttonIcon]]" alt="Share Menu"></paper-icon-button> Share
+            </span>
             <paper-material slot="dropdown-content">
             <div class="social-list">
                 <div>
                 <paper-icon-button href$="https://www.facebook.com/sharer/sharer.php?u=[[url]]" hidden$="[[!facebook]]" style="color:#3B5998" class="social-icon" cake="1w2" icon="brand:facebook" on-tap="_share"></paper-icon-button>
-                </div>
-                <div>
-                <paper-icon-button href$="https://plus.google.com/share?url=[[url]]" hidden$="[[!google]]" style="color:#DC4E41" class="social-icon" icon="brand:google" on-tap="_share"></paper-icon-button>
                 </div>
                 <div>
                 <paper-icon-button href$="http://twitter.com/intent/tweet?url=[[url]]&text=[[sharingText]]" hidden$="[[!twitter]]" style="color:#1DA1F2" class="social-icon" icon="brand:twitter" on-tap="_share"></paper-icon-button>
@@ -58,16 +57,13 @@ class NewsShare extends PolymerElement {
                 <paper-icon-button href$="http://reddit.com/submit?url=[[url]]&title=[[sharingText]]" hidden$="[[!reddit]]" style="color:#FF4500" class="social-icon" icon="brand:reddit" on-tap="_share"></paper-icon-button>
                 </div>
                 <div>
-                <paper-icon-button href$="http://vkontakte.ru/share.php?url=[[url]]" hidden$="[[!vk]]" style="color:#6383A8" class="social-icon" icon="brand:vk" on-tap="_share"></paper-icon-button>
-                </div>
-                <div>
                 <paper-icon-button href$="http://www.blogger.com/blog-this.g?n=[[sharingText]]&b=[[sharingText]]%20[[url]]" hidden$="[[!blogger]]" style="color:#F38936" class="social-icon" icon="brand:blogger" on-tap="_share"></paper-icon-button>
                 </div>
                 <div>
-                <paper-icon-button href$="http://www.tumblr.com/share/link?url=[[url]]" hidden$="[[!tumblr]]" style="color:#36465D" class="social-icon" icon="brand:tumblr" on-tap="_share"></paper-icon-button>
+                <paper-icon-button href$="https://www.tumblr.com/widgets/share/tool?shareSource=legacy&canonicalUrl=[[url]]&posttype=link" hidden$="[[!tumblr]]" style="color:#36465D" class="social-icon" icon="brand:tumblr" on-tap="_share"></paper-icon-button>
                 </div>
                 <div>
-                <a href$="mailto:?body=[[url]]&subject=[[sharingText]]" target="_blank" tabindex="-1">
+                <a href$="mailto:?body=[[_cleanUrl(url)]]&subject=[[sharingText]]" tabindex="-1">
                     <paper-icon-button hidden$="[[!email]]" style="color:#000000" class="social-icon" icon="custom:email"></paper-icon-button>
                 </a>
                 </div>
@@ -204,8 +200,13 @@ class NewsShare extends PolymerElement {
        },
     }}
 
+    _cleanUrl(url) {
+        return url.replace(/ /g, '%2520').replace(/%20/g, '%2520');
+    }
+
     _share(event) {
-        event.stopPropagation();
+        event.stopImmediatePropagation();
+        event.preventDefault();
         //var element = Polymer.dom(event).localTarget; Polymer-element doesn't have this functionality
         var element = event.currentTarget;
         element.icon = element.getAttribute('icon');
@@ -219,17 +220,17 @@ class NewsShare extends PolymerElement {
                     case 'brand:facebook':
                         this._openPopup(element.getAttribute('href'), 'Sharing', 600, 375);
                         break;
-                    case 'brand:google':
-                        this._openPopup(element.getAttribute('href'), 'Sharing', 400, 445);
+                    case 'brand:tumblr':
+                        this._openPopup(this._cleanUrl(element.getAttribute('href')), 'Sharing');
                         break;
                     case 'brand:twitter':
-                        this._openPopup(element.getAttribute('href'), 'Sharing', 500, 230);
+                        this._openPopup(this._cleanUrl(element.getAttribute('href')), 'Sharing', 500, 230);
                         break;
                     default:
-                        window.open(element.getAttribute('href'), 'Sharing');
+                        window.open(this._cleanUrl(element.getAttribute('href')), 'Sharing');
                 }
             } else {
-                window.open(element.getAttribute('href'), 'Sharing');
+                window.open(this._cleanUrl(element.getAttribute('href')), 'Sharing');
             }
         } else {
             console.error("Impossible to share, no url set");
@@ -238,6 +239,7 @@ class NewsShare extends PolymerElement {
     }
 
     _openPopup(url, title, w, h) {
+        debugger;
         //Center and open the popup.
         var y = window.top.outerHeight / 2 + window.top.screenY - (h / 2)
         var x = window.top.outerWidth / 2 + window.top.screenX - (w / 2)

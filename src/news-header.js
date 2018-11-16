@@ -35,7 +35,7 @@ class NewsHeader extends PolymerElement {
       .date-line,
       .article-headline {
         text-align: center;
-        font-size: 11px;
+        font-size: 12px;
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
@@ -124,6 +124,12 @@ class NewsHeader extends PolymerElement {
         color: var(--app-nav-text-color);
       }
 
+      news-share, #stickyshare {
+        margin-left: auto;
+        margin-right: 0;
+        font-size: 0;
+      }
+
       /* mobile */
       @media (max-width: 767px) {
         header {
@@ -171,7 +177,7 @@ class NewsHeader extends PolymerElement {
 
         /* Can't use flex because we need a fixed width to clip text overflow. */
         :host([page=article]) .sticky-nav-center {
-          width: calc(100% - 120px); /* 40px * 3 buttons */
+          width: calc(100% - 80px); /* 40px * 2 buttons */
         }
 
         /* Can't use flex because we need a fixed width to clip text overflow. */
@@ -312,7 +318,7 @@ class NewsHeader extends PolymerElement {
             <slot></slot>
           </div>
         </div>
-        <news-share id="psb" facebook twitter reddit tumblr email url="[[shareUrl]]"></news-share>
+        <news-share id="stickyshare" horizontal-align="right" facebook twitter reddit tumblr email url="[[shareUrl]]"></news-share>
       </app-toolbar>
       <div class="sticky-nav-menu" shown\$="[[drawerOpened]]">
         <iron-selector class="grid-container" role="navigation" selected="[[category.name]]" attr-for-selected="name">

@@ -84,12 +84,9 @@ class NewsArticle extends PolymerElement {
         margin-bottom: 32px;
       }
 
-      .share-link {
-        display: inline-block;
-        margin-right: 24px;
-        margin-bottom: 12px;
+      news-share {
         color: inherit;
-        font-size: 11px;
+        font-size: 1rem;
         font-weight: bold;
         text-decoration: none;
       }
@@ -161,9 +158,7 @@ class NewsArticle extends PolymerElement {
       </article>
 
       <aside>
-        <a href="#" on-click="_shareWrap" class="share-link" aria-label="Share on social networks">
-          <news-share facebook twitter reddit tumblr email url="[[_share(article)]]"></news-share> Share
-        </a>
+        <news-share facebook twitter reddit tumblr email url="[[_share(article)]]"></news-share>
         <news-side-list class="fade-in" items="[[_slice(category.items, 0, 3)]]">
           Most Read
         </news-side-list>
@@ -416,18 +411,6 @@ class NewsArticle extends PolymerElement {
 
   _share(article) {
     return window.location.href;
-  }
-
-  _shareWrap(evt) {
-    evt.preventDefault();
-    evt.stopPropagation();
-
-    if (evt.srcElement.tagName == "A") {
-      var psb = evt.target.querySelector('news-share');
-      psb.$.shareMenu.open();
-    }
-
-    return false;
   }
 
   _computePreviousArticle(categoryItems, article) {
