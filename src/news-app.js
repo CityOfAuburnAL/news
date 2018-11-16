@@ -18,7 +18,7 @@ import './news-nav.js';
 import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 import { scroll } from '@polymer/app-layout/helpers/helpers.js';
 
-import { updateMetadata } from 'pwa-helpers/metadata.js';
+//import { updateMetadata } from 'pwa-helpers/metadata.js';
 
 class NewsApp extends PolymerElement {
   static get template() {
@@ -289,7 +289,10 @@ class NewsApp extends PolymerElement {
     this._setMeta('property', 'og:title', document.title);
     this._setMeta('property', 'og:description', description || document.title);
     this._setMeta('property', 'og:url', document.location.href);
-    this._setMeta('property', 'og:image', image);
+    //Image headaches
+    image = image.replace(/ /g, '%20');
+    this._setMeta('property', 'og:image:secure_url', image);
+    this._setMeta('property', 'og:image', image.replace('https:', 'http:'));
 
     // Set twitter card metadata
     this._setMeta('name', 'twitter:title', document.title);
@@ -297,12 +300,13 @@ class NewsApp extends PolymerElement {
     this._setMeta('name', 'twitter:url', document.location.href);
     this._setMeta('name', 'twitter:image:src', image);
 
-    updateMetadata({
-      title: document.title,
-      description: description || document.title,
-      url: document.location.href,
-      image: image
-    });
+    // I think this whole package isn't needed anymore
+    // updateMetadata({
+    //   title: document.title,
+    //   description: description || document.title,
+    //   url: document.location.href,
+    //   image: image
+    // });
   }
 
   _setMeta(attrName, attrValue, content) {
