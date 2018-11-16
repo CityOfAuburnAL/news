@@ -292,10 +292,10 @@ class NewsApp extends PolymerElement {
     this._setMeta('property', 'og:image', image);
 
     // Set twitter card metadata
-    this._setMeta('property', 'twitter:title', document.title);
-    this._setMeta('property', 'twitter:description', description || document.title);
-    this._setMeta('property', 'twitter:url', document.location.href);
-    this._setMeta('property', 'twitter:image:src', image);
+    this._setMeta('name', 'twitter:title', document.title);
+    this._setMeta('name', 'twitter:description', description || document.title);
+    this._setMeta('name', 'twitter:url', document.location.href);
+    this._setMeta('name', 'twitter:image:src', image);
 
     updateMetadata({
       title: document.title,
