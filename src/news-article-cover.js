@@ -71,7 +71,7 @@ class NewsArticleCover extends PolymerElement {
       }
 
       :host-context(.fixed-viewport-height) .cover-img-container > news-img {
-        min-height: calc(var(--viewport-height) * 0.6);
+        // min-height: calc(var(--viewport-height) * 0.6); no idea why, but it breaks Edge desktop
       }
 
       .timer-icon {

@@ -26,7 +26,8 @@
         "minify": true
       },
       "bundle": true,
-      "addServiceWorker": true
+      "addServiceWorker": true,
+      "basePath": true
     },
     {
       "name": "es6-bundled",
@@ -61,11 +62,13 @@
         "minify": true
       },
       "bundle": true,
-      "addServiceWorker": true
+      "addServiceWorker": true,
+      "basePath": true
     }
   ],
   "moduleResolution": "node",
   "npm": true,
+  "autoBasePath": true,
   "lint": {
     "rules": [
       "polymer-3"
