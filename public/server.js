@@ -16,7 +16,7 @@ app.get('/.well-known/assetlinks.json', function(req, res) {
       "namespace": "android_app",
       "package_name": "com.coa.auburnalabamanews",
       "sha256_cert_fingerprints":
-      ["A9:5B:BE:70:72:4D:8D:21:D2:F6:4C:47:70:FA:7F:2C:F2:CB:7B:E2:93:B1:07:90:DA:4F:F0:3C:93:7C:9C:4D"]
+      ["67:9D:CE:B5:5C:29:DF:31:7C:81:5C:2E:8D:4D:71:6D:48:2D:79:51:3D:DB:1C:1B:8B:65:8A:2A:A0:5A:0F:7C"]
     }
   }];
   res.setHeader('Content-Type', 'application/json');
