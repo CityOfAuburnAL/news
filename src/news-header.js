@@ -149,9 +149,9 @@ class NewsHeader extends PolymerElement {
           background-repeat: no-repeat;
           background-size: contain;
           display: inline-block;
-          height: 40px;
+          height: 35px;
           float: right;
-          width: 40px;
+          width: 41px;
         }
         header .homeLogo img {
           height: 34.15px;
