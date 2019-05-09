@@ -285,7 +285,7 @@ class NewsHeader extends PolymerElement {
         </div>
         <a class="homeLogo" aria-label="City of Auburn Website" href="https://www.auburnalabama.org/"></a>
       </app-toolbar>
-      <div class="date-line" role="heading">
+      <div class="date-line" role="heading" aria-level="6">
         [[category.title]] <span aria-hidden="true">&nbsp;·&nbsp;</span> [[_currentTime()]]
       </div>
       <dom-if if="[[!smallScreen]]">
@@ -311,7 +311,7 @@ class NewsHeader extends PolymerElement {
           <div class="logo">
             <a href="/" aria-label\$="[[_computeAppHomeLabel(appTitle)]]">[[appTitle]]</a>
           </div>
-          <div class="date-line" role="heading">
+          <div class="date-line" role="heading" aria-level="6">
             [[category.title]] <span aria-hidden="true">&nbsp; · &nbsp;</span> [[_currentTime()]]
           </div>
           <div class="article-headline">
