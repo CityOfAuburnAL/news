@@ -12,15 +12,14 @@ import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 
-let apiRoot = 'https://api.auburnalabama.org/pressrelease/';
+let apiRoot = 'https://api2.auburnalabama.org/pressrelease/';
 let categoryList = [
-  { id: 0, path: 'frontpage', name: 'top_stories', title: 'Top Stories'},
-  { id: 3, path: 'list/Office of the City Manager/50', name: 'Office of the City Manager', title: 'From City Manager'},
-  { id: 4, path: 'list/Parks and Recreation/50', name: 'Parks and Recreation', title: 'Parks and Recreation'},
-  { id: 5, path: 'list/Public Safety - Police/50', name: 'Public Safety - Police', title: 'Police'},
-  //{ id: 6, path: 'list/Planning/12', name: 'Planning', title: 'Planning'},
-  { id: 7, path: 'list/Public Works/12', name: 'Public Works', title: 'Public Works'},
-  { id: 8, path: 'list/Economic Development/12', name: 'Economic Development', title: 'Economic Development'}
+  { id: 2, path: 'join/list/2/active', name: 'City News', title: 'City News'},
+  { id: 1, path: 'join/list/1/active', name: 'Office of the City Manager', title: 'Announcements'},
+  { id: 3, path: 'join/list/3/active', name: 'Parks, Rec & Culture', title: 'Parks, Rec & Culture'},
+  { id: 4, path: 'join/list/4/active', name: 'Public Meetings', title: 'Public Meetings'},
+  { id: 5, path: 'join/list/5/active', name: 'Public Safety', title: 'Public Safety - Police'},
+  { id: 6, path: 'join/list/6/active', name: 'Traffic Advisories', title: 'Traffic Advisories'}
 ];
 
 let textarea = document.createElement('textarea');
@@ -140,7 +139,7 @@ class NewsData extends PolymerElement {
     let items = [];
 
     for (let i = 0, item; item = response[i]; ++i) {
-      items.push(this._parseArticleItem(item));
+      items.push({...this._parseArticleItem(item.pressRelease), priority: response[i].priority});
     }
 
     return items;
@@ -148,21 +147,30 @@ class NewsData extends PolymerElement {
 
   _parseArticleItem(item) {
     return {
-        headline: this._unescapeText(item.Title),
-        href: this._getItemHref(item),
-        id: item.PressReleaseID,
-        imageUrl: this._getItemImage(item),
+        headline: this._unescapeText(item.name),
+        // TODO - rework
+        href: `/article/${item.id}`,// this._getItemHref(item),
+        id: item.id,
+        imageUrl: item.coverImage,// this._getItemImage(item),
+        // TODO - rework
         placeholder: item.placeholder || "data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAAA8AAD/4QMxaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLwA8P3hwYWNrZXQgYmVnaW49Iu+7vyIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/PiA8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJBZG9iZSBYTVAgQ29yZSA1LjYtYzExMSA3OS4xNTgzMjUsIDIwMTUvMDkvMTAtMDE6MTA6MjAgICAgICAgICI+IDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+IDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIiB4bWxuczpzdFJlZj0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL1Jlc291cmNlUmVmIyIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjJFNTQzRDI0QTM4RTExRTY5NjdCRDcxN0ZDQzkwNzU3IiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjJFNTQzRDIzQTM4RTExRTY5NjdCRDcxN0ZDQzkwNzU3IiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCBDQyAyMDE1IChNYWNpbnRvc2gpIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6MUYyN0U2RkRBMzg3MTFFNjk2N0JENzE3RkNDOTA3NTciIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MUYyN0U2RkVBMzg3MTFFNjk2N0JENzE3RkNDOTA3NTciLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz7/7gAmQWRvYmUAZMAAAAABAwAVBAMGCg0AAATiAAAFEgAABUsAAAV4/9sAhAAGBAQEBQQGBQUGCQYFBgkLCAYGCAsMCgoLCgoMEAwMDAwMDBAMDg8QDw4MExMUFBMTHBsbGxwfHx8fHx8fHx8fAQcHBw0MDRgQEBgaFREVGh8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx//wgARCAAGAAoDAREAAhEBAxEB/8QAhwABAQAAAAAAAAAAAAAAAAAABQYBAQAAAAAAAAAAAAAAAAAAAAAQAAIDAQAAAAAAAAAAAAAAABADAAEEJBEAAQMDBQAAAAAAAAAAAAAAAgABEdESA0JiEzOjEgEAAAAAAAAAAAAAAAAAAAAQEwEAAgIDAQAAAAAAAAAAAAABEBEhMQBRkaH/2gAMAwEAAhEDEQAAAa0WP//aAAgBAQABBQLWp97OKf/aAAgBAgABBQIf/9oACAEDAAEFAh//2gAIAQICBj8CP//aAAgBAwIGPwI//9oACAEBAQY/ArgzEOOG5QZim3bDLT1eVF//2gAIAQEDAT8hYJl0gXNk3nWYR//aAAgBAgMBPyGP/9oACAEDAwE/IY//2gAMAwEAAhEDEQAAEEP/2gAIAQEDAT8Qf2TjokQgNtX5fTw4f//aAAgBAgMBPxCP/9oACAEDAwE/EI//2Q==",
+        // TODO - rework
         category: item.List ? item.List.ListName : '',
-        timeAgo: this._timeAgo(new Date(item.DateAdded).getTime()),
-        author: item.ContactPerson,
-        authorPhone: item.ContactPhone.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3'),
-        authorTitle: item.ContactTitle,
-        summary: this._trimRight(item.Summary, 100),
-        html: this._formatHTML(item.PressRelease),
-        mainPriority: item.MainPagePriority,
-        priority: item.Priority,
-        readTime: Math.max(1, Math.round(item.SearchableContent.length / 3000)) + ' min read'
+        timeAgo: this._timeAgo(new Date(item.publishDate).getTime()),
+        author: item.pressContact.name,
+        // TODO - rework for 4 digit data
+        authorPhone: item.pressContact.phone.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3'),
+        authorTitle: item.pressContact.title,
+        // TODO - check `100` in UI, set to 500 in db
+        summary: this._trimRight(item.blurb, 100),
+        // TODO - rework - shouldn't need to format, at least not as much
+        html: this._formatHTML(item.content),
+        // TODO - rework
+        mainPriority: 0, //item.MainPagePriority,
+        // TODO - rework
+        priority: 0, //item.Priority,
+        // TODO - rework as we now have HTML, no simple string data field
+        readTime: Math.max(1, Math.round(item.content.length / 3000)) + ' min read'
       };
   }
 
