@@ -37,7 +37,10 @@ class NewsData extends PolymerElement {
       notify: true
     },
 
-    categoryName: String,
+    categoryName: {
+      type: String,
+      value: ''
+    },
 
     articleId: String,
 
@@ -75,6 +78,8 @@ class NewsData extends PolymerElement {
   ]}
 
   _computeArticle(categoryItems, articleId) {
+    console.log(categoryItems);
+    console.log(articleId);
     if (!categoryItems || !articleId) {
       return null;
     }
@@ -88,6 +93,16 @@ class NewsData extends PolymerElement {
     return {
       id: articleId
     };
+  }
+
+  _computeCategory(categoryName) {
+    console.log(categoryName);
+    for (let i = 0, c; c = this.categories[i]; ++i) {
+      if (c.name === categoryName) {
+        return c;
+      }
+    }
+    return null;
   }
 
   _fetchArticle(article, offline) {
@@ -112,15 +127,6 @@ class NewsData extends PolymerElement {
         //this.set('article.html', this._formatHTML(response)); 
       },
       3 /* attempts */, true /* isRaw */);
-  }
-
-  _computeCategory(categoryName) {
-    for (let i = 0, c; c = this.categories[i]; ++i) {
-      if (c.name === categoryName) {
-        return c;
-      }
-    }
-    return null;
   }
 
   _fetchCategory(category, offline, attempts) {
