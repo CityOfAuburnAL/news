@@ -12,14 +12,15 @@ import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 
+// data api docs: https://api2.auburnalabama.org/pressrelease/apidocs/index.html
 let apiRoot = 'https://api2.auburnalabama.org/pressrelease/';
 let categoryList = [
-  { id: 2, path: 'join/list/2/active', name: 'City News', title: 'City News'},
-  { id: 1, path: 'join/list/1/active', name: 'Office of the City Manager', title: 'Announcements'},
-  { id: 3, path: 'join/list/3/active', name: 'Parks, Rec & Culture', title: 'Parks, Rec & Culture'},
-  { id: 4, path: 'join/list/4/active', name: 'Public Meetings', title: 'Public Meetings'},
-  { id: 5, path: 'join/list/5/active', name: 'Public Safety', title: 'Public Safety - Police'},
-  { id: 6, path: 'join/list/6/active', name: 'Traffic Advisories', title: 'Traffic Advisories'}
+  { id: 2, path: 'join/list/2/current', name: 'City News', title: 'City News'},
+  { id: 1, path: 'join/list/1/current', name: 'Office of the City Manager', title: 'Announcements'},
+  { id: 3, path: 'join/list/3/current', name: 'Parks, Rec & Culture', title: 'Parks, Rec & Culture'},
+  { id: 4, path: 'join/list/4/current', name: 'Public Meetings', title: 'Public Meetings'},
+  { id: 5, path: 'join/list/5/current', name: 'Public Safety', title: 'Public Safety - Police'},
+  { id: 6, path: 'join/list/6/current', name: 'Traffic Advisories', title: 'Traffic Advisories'}
 ];
 
 let textarea = document.createElement('textarea');
@@ -136,7 +137,7 @@ class NewsData extends PolymerElement {
       this._setFailure(false);
       return;
     }
-    this._fetch(apiRoot + category.path,
+    this._fetch(apiRoot + 'current', // category.path,
       (response) => { this.set('category.items', this._parseCategoryItems(response)); },
       attempts || 1 /* attempts */);
   }
