@@ -78,6 +78,16 @@ class NewsData extends PolymerElement {
     '_fetchArticle(article, offline)'
   ]}
 
+  //we're going to rework this completely... onload and offline -> online may update the articles list (which will contain all active articles)
+  // changing the category should filter the list
+  // setting article-id should grab article (then what, prepend to list and display? or just display?)
+  ready() {
+    this._fetch(apiRoot + 'current', 
+      (response) => {
+        (response) => { this.set('category.items', this._parseCategoryItems(response)); }},
+      1 /* attempts */);
+  }
+
   _computeArticle(categoryItems, articleId) {
     console.log(categoryItems);
     console.log(articleId);
@@ -96,6 +106,7 @@ class NewsData extends PolymerElement {
     };
   }
 
+  // This needs to go through the news articles and filter based on category....
   _computeCategory(categoryName) {
     console.log(categoryName);
     for (let i = 0, c; c = this.categories[i]; ++i) {
