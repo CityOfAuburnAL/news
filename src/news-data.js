@@ -38,6 +38,11 @@ class NewsData extends PolymerElement {
       notify: true
     },
 
+    articles: {
+      type: Array,
+      value: []
+    },
+
     categoryName: {
       type: String,
       value: ''
@@ -82,15 +87,15 @@ class NewsData extends PolymerElement {
   // changing the category should filter the list
   // setting article-id should grab article (then what, prepend to list and display? or just display?)
   ready() {
+    super.ready();
+    console.log('ready')
     this._fetch(apiRoot + 'current', 
-      (response) => {
-        (response) => { this.set('category.items', this._parseCategoryItems(response)); }},
+      (response) => { console.log(response); this.set('articles', this._parseAllItems(response)); },
       1 /* attempts */);
   }
 
   _computeArticle(categoryItems, articleId) {
-    console.log(categoryItems);
-    console.log(articleId);
+    console.log(`compute article: ${articleId}`);
     if (!categoryItems || !articleId) {
       return null;
     }
@@ -162,6 +167,15 @@ class NewsData extends PolymerElement {
 
     return items;
   }
+  _parseAllItems(response) {
+    let items = [];
+
+    for (let i = 0, item; item = response[i]; ++i) {
+      items.push({...this._parseArticleItem(item), priority: response[i].priority});
+    }
+
+    return items;
+  }
 
   _parseArticleItem(item) {
     return {
@@ -177,7 +191,7 @@ class NewsData extends PolymerElement {
         timeAgo: this._timeAgo(new Date(item.publishDate).getTime()),
         author: item.pressContact.name,
         // TODO - rework for 4 digit data
-        authorPhone: item.pressContact.phone.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3'),
+        authorPhone: item.pressContact.phone ? item.pressContact.phone.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3') : '',
         authorTitle: item.pressContact.title,
         // TODO - check `100` in UI, set to 500 in db
         summary: this._trimRight(item.blurb, 100),
