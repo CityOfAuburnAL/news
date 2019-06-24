@@ -60,13 +60,13 @@ class NewsData extends PolymerElement {
 
     category: {
       type: Object,
-      computed: '_computeCategory(categoryName)',
+      computed: '_computeCategory(articles, categoryName)',
       notify: true
     },
 
     article: {
       type: Object,
-      computed: '_computeArticle(category.items, articleId)',
+      computed: '_computeArticle(articles, articleId)',
       notify: true
     },
 
@@ -86,6 +86,7 @@ class NewsData extends PolymerElement {
   //we're going to rework this completely... onload and offline -> online may update the articles list (which will contain all active articles)
   // changing the category should filter the list
   // setting article-id should grab article (then what, prepend to list and display? or just display?)
+  // TODO - let's also get catgoryList so we can match while parsing article data. 
   ready() {
     super.ready();
     console.log('ready')
@@ -96,15 +97,17 @@ class NewsData extends PolymerElement {
 
   _computeArticle(categoryItems, articleId) {
     console.log(`compute article: ${articleId}`);
-    if (!categoryItems || !articleId) {
+    if (!categoryItems && !articleId) {
       return null;
     }
     for (let i = 0; i < categoryItems.length; ++i) {
       let article = categoryItems[i];
       if (article.id == articleId) {
+        console.log('Found article');
         return article;
       }
     }
+    console.log('Need to fetch article');
     /* Critical to tell it to fetch the article even though it's not in the list of articles  */
     return {
       id: articleId
@@ -112,8 +115,8 @@ class NewsData extends PolymerElement {
   }
 
   // This needs to go through the news articles and filter based on category....
-  _computeCategory(categoryName) {
-    console.log(categoryName);
+  _computeCategory(articles, categoryName) {
+    console.log(`Computing category from ${articles.length} articles.`);
     for (let i = 0, c; c = this.categories[i]; ++i) {
       if (c.name === categoryName) {
         return c;
@@ -135,6 +138,7 @@ class NewsData extends PolymerElement {
       return;
     }
 
+    if (!article.id) return;
     this._fetch(apiRoot + article.id,
       (response) => { 
         var responseArticle = JSON.parse(response)[0];

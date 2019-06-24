@@ -281,7 +281,7 @@ class NewsApp extends PolymerElement {
   }
 
   _setPageMetadata(description, article) {
-    let image = article ? article.imageUrl : 'images/news-icon-128.png';
+    let image = article && article.imageUrl ? article.imageUrl : 'images/news-icon-128.png';
 
     // Set open graph metadata
     this._setMeta('property', 'og:title', document.title);
