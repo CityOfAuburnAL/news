@@ -15,12 +15,12 @@ import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 // data api docs: https://api2.auburnalabama.org/pressrelease/apidocs/index.html
 let apiRoot = 'https://api2.auburnalabama.org/pressrelease/';
 let displayList = [
-  { id: 2, path: 'join/list/2/current', name: 'City News', title: 'City News'},
-  { id: 1, path: 'join/list/1/current', name: 'Office of the City Manager', title: 'Announcements'},
-  { id: 3, path: 'join/list/3/current', name: 'Parks, Rec & Culture', title: 'Parks, Rec & Culture'},
-  { id: 4, path: 'join/list/4/current', name: 'Public Meetings', title: 'Public Meetings'},
-  { id: 5, path: 'join/list/5/current', name: 'Public Safety', title: 'Public Safety - Police'},
-  { id: 6, path: 'join/list/6/current', name: 'Traffic Advisories', title: 'Traffic Advisories'}
+  { id: 2, path: 'join/list/2/current', name: 'City News', title: 'City News', items: []},
+  { id: 1, path: 'join/list/1/current', name: 'Office of the City Manager', title: 'Announcements', items: []},
+  { id: 3, path: 'join/list/3/current', name: 'Parks, Rec & Culture', title: 'Parks, Rec & Culture', items: []},
+  { id: 4, path: 'join/list/4/current', name: 'Public Meetings', title: 'Public Meetings', items: []},
+  { id: 5, path: 'join/list/5/current', name: 'Public Safety', title: 'Public Safety - Police', items: []},
+  { id: 6, path: 'join/list/6/current', name: 'Traffic Advisories', title: 'Traffic Advisories', items: []}
 ];
 // Don't need the old `path` because we're just going to filter all articles.
 // We'll get the lists live but for timing and offline we'll start with this version.
@@ -43,7 +43,8 @@ class NewsData extends PolymerElement {
 
     articles: {
       type: Array,
-      value: []
+      value: [],
+      notify: true
     },
 
     categoryName: {
@@ -63,7 +64,7 @@ class NewsData extends PolymerElement {
 
     category: {
       type: Object,
-      computed: '_computeCategory(articles, categoryName)',
+      //computed: '_computeCategory(articles, categoryName)',
       notify: true
     },
 
@@ -99,7 +100,12 @@ class NewsData extends PolymerElement {
     super.ready();
     console.log('ready')
     this._fetch(apiRoot + 'current', 
-      (response) => { console.log(response); this.set('articles', this._parseAllItems(response)); },
+      (response) => { 
+        console.log(response); 
+        this.set('articles', this._parseAllItems(response));
+        // maybe we should put the articles into their categories so it's like it was?
+        // but does that mean we need to parse them all first? perhaps we just do it while parsing? But what about the ones that aren't supposed to be on the main page? Different priority?
+      },
       1 /* attempts */);
       this._fetch(apiRoot + 'list', 
       (response) => { console.log(response); this.set('lists', response); },
@@ -195,16 +201,17 @@ class NewsData extends PolymerElement {
   _parseArticleItem(item) {
     if (!item) return; // short circuit parsing nothing, not sure where this is even coming from.
     // press release LISTS
-    let categories = [];
+    let categoryNames = [];
     for (let i = 0; i < item.pressReleaseListsJoin.length; i++) {
       //polyfill for IE?
       let l = this.lists.find(e => e.id === item.pressReleaseListsJoin[i].pressReleaseListID);
-      if (l) categories.push(l.name);
+      if (l) categoryNames.push(l.name);
     }
     // PHONE
     if (item.pressContact && item.pressContact.phone && item.pressContact.phone.length === 4)
       item.pressContact.phone = '334501' + item.pressContact.phone;
-    return {
+    // make article object
+    let article = {
         headline: this._unescapeText(item.name),
         // reworked?
         href: `/article/${item.id}`,// this._getItemHref(item),
@@ -213,7 +220,7 @@ class NewsData extends PolymerElement {
         // TODO - rework
         placeholder: item.placeholder || "data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAAA8AAD/4QMxaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLwA8P3hwYWNrZXQgYmVnaW49Iu+7vyIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/PiA8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJBZG9iZSBYTVAgQ29yZSA1LjYtYzExMSA3OS4xNTgzMjUsIDIwMTUvMDkvMTAtMDE6MTA6MjAgICAgICAgICI+IDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+IDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIiB4bWxuczpzdFJlZj0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL1Jlc291cmNlUmVmIyIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjJFNTQzRDI0QTM4RTExRTY5NjdCRDcxN0ZDQzkwNzU3IiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjJFNTQzRDIzQTM4RTExRTY5NjdCRDcxN0ZDQzkwNzU3IiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCBDQyAyMDE1IChNYWNpbnRvc2gpIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6MUYyN0U2RkRBMzg3MTFFNjk2N0JENzE3RkNDOTA3NTciIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MUYyN0U2RkVBMzg3MTFFNjk2N0JENzE3RkNDOTA3NTciLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz7/7gAmQWRvYmUAZMAAAAABAwAVBAMGCg0AAATiAAAFEgAABUsAAAV4/9sAhAAGBAQEBQQGBQUGCQYFBgkLCAYGCAsMCgoLCgoMEAwMDAwMDBAMDg8QDw4MExMUFBMTHBsbGxwfHx8fHx8fHx8fAQcHBw0MDRgQEBgaFREVGh8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx//wgARCAAGAAoDAREAAhEBAxEB/8QAhwABAQAAAAAAAAAAAAAAAAAABQYBAQAAAAAAAAAAAAAAAAAAAAAQAAIDAQAAAAAAAAAAAAAAABADAAEEJBEAAQMDBQAAAAAAAAAAAAAAAgABEdESA0JiEzOjEgEAAAAAAAAAAAAAAAAAAAAQEwEAAgIDAQAAAAAAAAAAAAABEBEhMQBRkaH/2gAMAwEAAhEDEQAAAa0WP//aAAgBAQABBQLWp97OKf/aAAgBAgABBQIf/9oACAEDAAEFAh//2gAIAQICBj8CP//aAAgBAwIGPwI//9oACAEBAQY/ArgzEOOG5QZim3bDLT1eVF//2gAIAQEDAT8hYJl0gXNk3nWYR//aAAgBAgMBPyGP/9oACAEDAwE/IY//2gAMAwEAAhEDEQAAEEP/2gAIAQEDAT8Qf2TjokQgNtX5fTw4f//aAAgBAgMBPxCP/9oACAEDAwE/EI//2Q==",
         // reworked?
-        category: item.pressReleaseListsJoin ? categories : [],
+        category: item.pressReleaseListsJoin ? categoryNames : [],
         timeAgo: this._timeAgo(new Date(item.publishDate).getTime()),
         author: item.pressContact.name,
         // reworked? for 4 digit data
@@ -230,6 +237,29 @@ class NewsData extends PolymerElement {
         // TODO - rework as we now have HTML, no simple string data field
         readTime: Math.max(1, Math.round(item.content.length / 3000)) + ' min read'
       };
+    //put article into displayCategory pages?
+    if (this.categories) {
+      let minPriority = 100;
+      let maxCategoryIndex = null;
+      for (let i = 0; i < item.pressReleaseListsJoin.length; i++) {
+        //polyfill for IE?
+        let c = this.categories.findIndex(e => e.id === item.pressReleaseListsJoin[i].pressReleaseListID);
+        if (c) {
+          this.categories[c].items.push({...article, priority: item.pressReleaseListsJoin[i].priority });
+          if (item.pressReleaseListsJoin[i].priority < minPriority) maxCategoryIndex = c;
+        }
+      }
+      // set a category if none exists, the alternative is to change what news-article sets for the aside lists
+      if (!this.category && maxCategoryIndex) {
+        this.set('category', this.categories[maxCategoryIndex]);
+        console.log(this.categories[maxCategoryIndex].items);
+        this.set('category.items', this.categories[maxCategoryIndex].items);
+        //do I also need to set category.items... or will it come through?
+      }
+    }
+
+    // return
+    return article;
   }
 
   _unescapeText(text) {
