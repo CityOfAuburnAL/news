@@ -147,7 +147,11 @@ class NewsArticleCover extends PolymerElement {
     <div class="cover-text">
       <div class="flex"></div>
       <div>
-        <div class="category">[[article.category]]</div>
+        <dom-repeat items="[[article.category]]">
+          <template>
+            <div class="category">[[item]]</div>
+          </template>
+        </dom-repeat>
       </div>
       <h1>[[article.headline]]<small>[[article.author]]&mdash;<em>[[article.authorTitle]]</em></small></h1>
       <div class="meta">

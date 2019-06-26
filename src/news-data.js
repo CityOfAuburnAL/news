@@ -14,7 +14,7 @@ import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 
 // data api docs: https://api2.auburnalabama.org/pressrelease/apidocs/index.html
 let apiRoot = 'https://api2.auburnalabama.org/pressrelease/';
-let categoryList = [
+let displayList = [
   { id: 2, path: 'join/list/2/current', name: 'City News', title: 'City News'},
   { id: 1, path: 'join/list/1/current', name: 'Office of the City Manager', title: 'Announcements'},
   { id: 3, path: 'join/list/3/current', name: 'Parks, Rec & Culture', title: 'Parks, Rec & Culture'},
@@ -22,6 +22,9 @@ let categoryList = [
   { id: 5, path: 'join/list/5/current', name: 'Public Safety', title: 'Public Safety - Police'},
   { id: 6, path: 'join/list/6/current', name: 'Traffic Advisories', title: 'Traffic Advisories'}
 ];
+// Don't need the old `path` because we're just going to filter all articles.
+// We'll get the lists live but for timing and offline we'll start with this version.
+let categoryList = [{"id":1,"name":"Announcements"},{"id":2,"name":"City News"},{"id":3,"name":"Parks, Rec & Culture"},{"id":4,"name":"Public Meetings"},{"id":5,"name":"Public Safety"},{"id":6,"name":"Traffic Advisories"},{"id":7,"name":"Top Stories"},{"id":8,"name":"Parks & Rec Landing Page"}];
 
 let textarea = document.createElement('textarea');
 
@@ -33,7 +36,7 @@ class NewsData extends PolymerElement {
 
     categories: {
       type: Array,
-      value: categoryList,
+      value: displayList,
       readOnly: true,
       notify: true
     },
@@ -70,6 +73,11 @@ class NewsData extends PolymerElement {
       notify: true
     },
 
+    lists: {
+      type: Array,
+      value: categoryList
+    },
+
     failure: {
       type: Boolean,
       readOnly: true,
@@ -92,6 +100,9 @@ class NewsData extends PolymerElement {
     console.log('ready')
     this._fetch(apiRoot + 'current', 
       (response) => { console.log(response); this.set('articles', this._parseAllItems(response)); },
+      1 /* attempts */);
+      this._fetch(apiRoot + 'list', 
+      (response) => { console.log(response); this.set('lists', response); },
       1 /* attempts */);
   }
 
@@ -182,19 +193,30 @@ class NewsData extends PolymerElement {
   }
 
   _parseArticleItem(item) {
+    if (!item) return; // short circuit parsing nothing, not sure where this is even coming from.
+    // press release LISTS
+    let categories = [];
+    for (let i = 0; i < item.pressReleaseListsJoin.length; i++) {
+      //polyfill for IE?
+      let l = this.lists.find(e => e.id === item.pressReleaseListsJoin[i].pressReleaseListID);
+      if (l) categories.push(l.name);
+    }
+    // PHONE
+    if (item.pressContact && item.pressContact.phone && item.pressContact.phone.length === 4)
+      item.pressContact.phone = '334501' + item.pressContact.phone;
     return {
         headline: this._unescapeText(item.name),
-        // TODO - rework
+        // reworked?
         href: `/article/${item.id}`,// this._getItemHref(item),
         id: item.id,
         imageUrl: item.coverImage,// this._getItemImage(item),
         // TODO - rework
         placeholder: item.placeholder || "data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAAA8AAD/4QMxaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLwA8P3hwYWNrZXQgYmVnaW49Iu+7vyIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/PiA8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJBZG9iZSBYTVAgQ29yZSA1LjYtYzExMSA3OS4xNTgzMjUsIDIwMTUvMDkvMTAtMDE6MTA6MjAgICAgICAgICI+IDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+IDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIiB4bWxuczpzdFJlZj0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL1Jlc291cmNlUmVmIyIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjJFNTQzRDI0QTM4RTExRTY5NjdCRDcxN0ZDQzkwNzU3IiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjJFNTQzRDIzQTM4RTExRTY5NjdCRDcxN0ZDQzkwNzU3IiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCBDQyAyMDE1IChNYWNpbnRvc2gpIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6MUYyN0U2RkRBMzg3MTFFNjk2N0JENzE3RkNDOTA3NTciIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MUYyN0U2RkVBMzg3MTFFNjk2N0JENzE3RkNDOTA3NTciLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz7/7gAmQWRvYmUAZMAAAAABAwAVBAMGCg0AAATiAAAFEgAABUsAAAV4/9sAhAAGBAQEBQQGBQUGCQYFBgkLCAYGCAsMCgoLCgoMEAwMDAwMDBAMDg8QDw4MExMUFBMTHBsbGxwfHx8fHx8fHx8fAQcHBw0MDRgQEBgaFREVGh8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx//wgARCAAGAAoDAREAAhEBAxEB/8QAhwABAQAAAAAAAAAAAAAAAAAABQYBAQAAAAAAAAAAAAAAAAAAAAAQAAIDAQAAAAAAAAAAAAAAABADAAEEJBEAAQMDBQAAAAAAAAAAAAAAAgABEdESA0JiEzOjEgEAAAAAAAAAAAAAAAAAAAAQEwEAAgIDAQAAAAAAAAAAAAABEBEhMQBRkaH/2gAMAwEAAhEDEQAAAa0WP//aAAgBAQABBQLWp97OKf/aAAgBAgABBQIf/9oACAEDAAEFAh//2gAIAQICBj8CP//aAAgBAwIGPwI//9oACAEBAQY/ArgzEOOG5QZim3bDLT1eVF//2gAIAQEDAT8hYJl0gXNk3nWYR//aAAgBAgMBPyGP/9oACAEDAwE/IY//2gAMAwEAAhEDEQAAEEP/2gAIAQEDAT8Qf2TjokQgNtX5fTw4f//aAAgBAgMBPxCP/9oACAEDAwE/EI//2Q==",
-        // TODO - rework
-        category: item.List ? item.List.ListName : '',
+        // reworked?
+        category: item.pressReleaseListsJoin ? categories : [],
         timeAgo: this._timeAgo(new Date(item.publishDate).getTime()),
         author: item.pressContact.name,
-        // TODO - rework for 4 digit data
+        // reworked? for 4 digit data
         authorPhone: item.pressContact.phone ? item.pressContact.phone.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3') : '',
         authorTitle: item.pressContact.title,
         // TODO - check `100` in UI, set to 500 in db
