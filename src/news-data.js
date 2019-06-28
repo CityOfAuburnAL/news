@@ -37,7 +37,7 @@ class NewsData extends PolymerElement {
     categories: {
       type: Array,
       value: displayList,
-      readOnly: true,
+      // readOnly: true,?
       notify: true
     },
 
@@ -64,7 +64,7 @@ class NewsData extends PolymerElement {
 
     category: {
       type: Object,
-      //computed: '_computeCategory(articles, categoryName)',
+      computed: '_computeCategory(articles, categoryName)',
       notify: true
     },
 
@@ -88,7 +88,7 @@ class NewsData extends PolymerElement {
   }}
 
   static get observers() { return [
-    '_fetchCategory(category, offline)',
+    //'_fetchCategory(category, offline)',
     '_fetchArticle(article, offline)'
   ]}
 
@@ -174,9 +174,14 @@ class NewsData extends PolymerElement {
       this._setFailure(false);
       return;
     }
-    this._fetch(apiRoot + 'current', // category.path,
-      (response) => { this.set('category.items', this._parseCategoryItems(response)); },
-      attempts || 1 /* attempts */);
+    // don't grab new ones?
+    // this._fetch(apiRoot + 'current', // category.path,
+    //   (response) => { this.set('category.items', this._parseCategoryItems(response)); },
+    //   attempts || 1 /* attempts */);
+    
+    // Instead, filter from articles?
+    // Or maybe, just set category == to one of the categories?
+
   }
 
   _parseCategoryItems(response) {

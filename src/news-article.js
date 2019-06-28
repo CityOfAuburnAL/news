@@ -146,7 +146,7 @@ class NewsArticle extends PolymerElement {
 
     <app-route
         route="{{route}}"
-        pattern="/:id"
+        pattern="/:category/:id"
         data="{{_routeData}}"></app-route>
 
     <div class="container" fade-in$="[[!loading]]" hidden$="[[failure]]">
@@ -205,7 +205,7 @@ class NewsArticle extends PolymerElement {
     categoryName: {
       type: Boolean,
       value: true,
-      //computed: '_return(_routeData.category)',
+      computed: '_return(_routeData.category)',
       notify: true
     },
 
