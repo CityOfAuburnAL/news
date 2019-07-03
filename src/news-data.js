@@ -12,6 +12,53 @@ import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 
+// https://tc39.github.io/ecma262/#sec-array.prototype.findindex
+if (!Array.prototype.findIndex) {
+  Object.defineProperty(Array.prototype, 'findIndex', {
+    value: function(predicate) {
+     // 1. Let O be ? ToObject(this value).
+      if (this == null) {
+        throw new TypeError('"this" is null or not defined');
+      }
+
+      var o = Object(this);
+
+      // 2. Let len be ? ToLength(? Get(O, "length")).
+      var len = o.length >>> 0;
+
+      // 3. If IsCallable(predicate) is false, throw a TypeError exception.
+      if (typeof predicate !== 'function') {
+        throw new TypeError('predicate must be a function');
+      }
+
+      // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
+      var thisArg = arguments[1];
+
+      // 5. Let k be 0.
+      var k = 0;
+
+      // 6. Repeat, while k < len
+      while (k < len) {
+        // a. Let Pk be ! ToString(k).
+        // b. Let kValue be ? Get(O, Pk).
+        // c. Let testResult be ToBoolean(? Call(predicate, T, « kValue, k, O »)).
+        // d. If testResult is true, return k.
+        var kValue = o[k];
+        if (predicate.call(thisArg, kValue, k, o)) {
+          return k;
+        }
+        // e. Increase k by 1.
+        k++;
+      }
+
+      // 7. Return -1.
+      return -1;
+    },
+    configurable: true,
+    writable: true
+  });
+}
+
 // data api docs: https://api2.auburnalabama.org/pressrelease/apidocs/index.html
 let apiRoot = 'https://api2.auburnalabama.org/pressrelease/';
 let displayList = [
@@ -136,6 +183,11 @@ class NewsData extends PolymerElement {
     };
   }
 
+  sortCategoryArticlesFn(a, b) {
+    if (a.priority < b.priority) return -1;
+    return 1;
+  }
+
   // This needs to go through the news articles and filter based on category....
   _computeCategory(articles, categoryName) {
     console.log(`Computing category from ${articles.length} articles.`);
@@ -143,6 +195,9 @@ class NewsData extends PolymerElement {
     if (articles.length === 0) return null;
     for (let i = 0, c; c = this.categories[i]; ++i) {
       if (c.name === categoryName) {
+        if (c.items) {
+          c.items.sort(this.sortCategoryArticlesFn);
+        }
         return c;
       }
     }
@@ -192,20 +247,27 @@ class NewsData extends PolymerElement {
 
   }
 
-  _parseCategoryItems(response) {
-    let items = [];
+  // _parseCategoryItems(response) {
+  //   let items = [];
 
-    for (let i = 0, item; item = response[i]; ++i) {
-      items.push({...this._parseArticleItem(item.pressRelease), priority: response[i].priority});
-    }
+  //   for (let i = 0, item; item = response[i]; ++i) {
+  //     let parsed = this._parseArticleItem(item.pressRelease);
+  //     parsed.priority = response[i].priority;
+  //     items.push(parsed);
+  //   }
 
-    return items;
-  }
+  //   return items;
+  // }
   _parseAllItems(response) {
     let items = [];
 
     for (let i = 0, item; item = response[i]; ++i) {
-      items.push({...this._parseArticleItem(item), priority: response[i].priority});
+      //let parsed = this._parseArticleItem(item); //WTF it breaks without some delay here... worked fine with the spread operator, works fine if you set it twice, set it once and NOPE
+      //parsed.priority = response[i].priority;
+      items.push(this._parseArticleItem(item));
+      //items.push({ ...this._parseArticleItem(item), priority: response[i].priority });
+      //console.log(response[i].priority);
+      //items.push({ ...parsed, priority: response[i].priority });
     }
 
     return items;
@@ -217,8 +279,8 @@ class NewsData extends PolymerElement {
     let categoryNames = [];
     for (let i = 0; i < item.pressReleaseListsJoin.length; i++) {
       //polyfill for IE?
-      let l = this.lists.find(e => e.id === item.pressReleaseListsJoin[i].pressReleaseListID);
-      if (l) categoryNames.push(l.name);
+      let li = this.lists.findIndex(e => e.id === item.pressReleaseListsJoin[i].pressReleaseListID);
+      if (li !== -1) categoryNames.push(this.lists[li].name);
     }
     // PHONE
     if (item.pressContact && item.pressContact.phone && item.pressContact.phone.length === 4)
@@ -258,14 +320,17 @@ class NewsData extends PolymerElement {
         //polyfill for IE?
         let c = this.categories.findIndex(e => e.id === item.pressReleaseListsJoin[i].pressReleaseListID);
         if (c !== -1) {
-          this.categories[c].items.push({...article, priority: item.pressReleaseListsJoin[i].priority });
+          let catArticle = JSON.stringify(article); 
+          catArticle = JSON.parse(catArticle); // ALL BECAUSE TO SUPPORT IE we can't use object spread
+          catArticle.priority = item.pressReleaseListsJoin[i].priority;
+          this.categories[c].items.push(catArticle);
+          //this.categories[c].items.push({ ...article, priority: item.pressReleaseListsJoin[i].priority });
           if (item.pressReleaseListsJoin[i].priority < minPriority) maxCategoryIndex = c;
         }
       }
       // set a category if none exists, the alternative is to change what news-article sets for the aside lists
       if (!this.category && maxCategoryIndex) {
         this.set('category', this.categories[maxCategoryIndex]);
-        console.log(this.categories[maxCategoryIndex].items);
         this.set('category.items', this.categories[maxCategoryIndex].items);
         //do I also need to set category.items... or will it come through?
       }
