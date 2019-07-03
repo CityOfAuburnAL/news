@@ -163,9 +163,10 @@ class NewsData extends PolymerElement {
     if (!article.id) return;
     this._fetch(apiRoot + article.id,
       (response) => { 
-        var responseArticle = JSON.parse(response)[0];
+        var responseArticle = JSON.parse(response);
         var parsedArticle = this._parseArticleItem(responseArticle);
-        this.push('category.items', parsedArticle);
+        console.log('Parsed new article');
+        this.push('articles', parsedArticle);
         this.set('articleId', parsedArticle.id);
         //this.set('article.html', this._formatHTML(response)); 
       },
