@@ -183,7 +183,6 @@ class NewsListFeaturedItem extends PolymerElement {
         <div class="scrim"></div>
       </div>
       <div class="headline">
-        <div class="category" hidden\$="[[!item.category]]">[[item.category]]</div>
         <h2>[[item.headline]]</h2>
         <div class="details">
           <div class="time-ago">[[item.timeAgo]]</div>

@@ -139,6 +139,8 @@ class NewsData extends PolymerElement {
   // This needs to go through the news articles and filter based on category....
   _computeCategory(articles, categoryName) {
     console.log(`Computing category from ${articles.length} articles.`);
+    // wait for articles
+    if (articles.length === 0) return null;
     for (let i = 0, c; c = this.categories[i]; ++i) {
       if (c.name === categoryName) {
         return c;
