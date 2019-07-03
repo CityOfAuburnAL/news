@@ -15,6 +15,7 @@ import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 // data api docs: https://api2.auburnalabama.org/pressrelease/apidocs/index.html
 let apiRoot = 'https://api2.auburnalabama.org/pressrelease/';
 let displayList = [
+  { id: 7, path: 'join/list/7/current', name: 'Top Stories', title: 'Top Stories', items: []},
   { id: 2, path: 'join/list/2/current', name: 'City News', title: 'City News', items: []},
   { id: 1, path: 'join/list/1/current', name: 'Office of the City Manager', title: 'Announcements', items: []},
   { id: 3, path: 'join/list/3/current', name: 'Parks, Rec & Culture', title: 'Parks, Rec & Culture', items: []},
@@ -24,7 +25,7 @@ let displayList = [
 ];
 // Don't need the old `path` because we're just going to filter all articles.
 // We'll get the lists live but for timing and offline we'll start with this version.
-let categoryList = [{"id":1,"name":"Announcements"},{"id":2,"name":"City News"},{"id":3,"name":"Parks, Rec & Culture"},{"id":4,"name":"Public Meetings"},{"id":5,"name":"Public Safety"},{"id":6,"name":"Traffic Advisories"},{"id":7,"name":"Top Stories"},{"id":8,"name":"Parks & Rec Landing Page"}];
+let categoryList = [{"id":1,"name":"Announcements"},{"id":2,"name":"City News"},{"id":3,"name":"Parks, Rec & Culture"},{"id":4,"name":"Public Meetings"},{"id":5,"name":"Public Safety"},{"id":6,"name":"Traffic Advisories"},{"id":7,"name":"Top Stories"}];
 
 let textarea = document.createElement('textarea');
 
@@ -101,14 +102,18 @@ class NewsData extends PolymerElement {
     console.log('ready')
     this._fetch(apiRoot + 'current', 
       (response) => { 
-        console.log(response); 
-        this.set('articles', this._parseAllItems(response));
+        console.log(`Fetched ${response.length} articles.`); 
+        let parsedArticles = this._parseAllItems(response);
+        console.log(`Parsed ${parsedArticles.length} articles.`)
+        this.set('articles', parsedArticles);
         // maybe we should put the articles into their categories so it's like it was?
         // but does that mean we need to parse them all first? perhaps we just do it while parsing? But what about the ones that aren't supposed to be on the main page? Different priority?
       },
       1 /* attempts */);
-      this._fetch(apiRoot + 'list', 
-      (response) => { console.log(response); this.set('lists', response); },
+    this._fetch(apiRoot + 'list', 
+      (response) => { 
+        //let's remove the ones that are only for website pages?
+        this.set('lists', response.filter(r => r.sitePageID !== 9)); },
       1 /* attempts */);
   }
 
@@ -219,7 +224,7 @@ class NewsData extends PolymerElement {
     let article = {
         headline: this._unescapeText(item.name),
         // reworked?
-        href: `/article/${item.id}`,// this._getItemHref(item),
+        href: `/article/${categoryNames[0] || 'news'}/${item.id}`,// this._getItemHref(item),
         id: item.id,
         imageUrl: item.coverImage,// this._getItemImage(item),
         // TODO - rework
@@ -249,7 +254,7 @@ class NewsData extends PolymerElement {
       for (let i = 0; i < item.pressReleaseListsJoin.length; i++) {
         //polyfill for IE?
         let c = this.categories.findIndex(e => e.id === item.pressReleaseListsJoin[i].pressReleaseListID);
-        if (c) {
+        if (c !== -1) {
           this.categories[c].items.push({...article, priority: item.pressReleaseListsJoin[i].priority });
           if (item.pressReleaseListsJoin[i].priority < minPriority) maxCategoryIndex = c;
         }
