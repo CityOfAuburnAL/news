@@ -56,7 +56,9 @@ class NewsArticle extends PolymerElement {
       }
 
       #content img {
+        display: block;
         max-width: 100%;
+        margin: 1rem auto;
       }
 
       #content figure {

@@ -78,6 +78,20 @@ class NewsArticleCover extends PolymerElement {
         margin-left: 30px;
       }
 
+      /* desktop only */
+      @media (min-width: 768px) {
+        .align-left {
+          clear: none;
+          float: left;
+          margin: 0 0 0.214rem 0.214rem;
+        }
+        .align-left {
+          clear: none;
+          float: right;
+          margin: 0 0.214rem 0.214rem 0;
+        }
+      }
+
       /* mobile */
       @media (max-width: 767px) {
         :host {
