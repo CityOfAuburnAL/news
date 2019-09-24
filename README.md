@@ -25,7 +25,7 @@ $ npm run serve:static
 
 ## Deploying
 
-Deployed on \\webserver1\inetpub\nodejs\news
+Deployed on \\webserver1\inetpub\nodejs\news from \build\ directory after running `npm run build`
 web.config in the root, and server.js in the build file (source for these are in the \public\ folder)
 I did run npm install --save-dev prpl-server rendertron-middleware in the root but I'm not sure if it was required
 IISNode was installed and the site is in IIS which just routes to node express webserver
