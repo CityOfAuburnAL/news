@@ -64,7 +64,7 @@ let apiRoot = 'https://api2.auburnalabama.org/pressrelease/';
 let displayList = [
   { id: 7, path: 'join/list/7/current', name: 'Top Stories', title: 'Top Stories', items: []},
   { id: 2, path: 'join/list/2/current', name: 'City News', title: 'City News', items: []},
-  { id: 1, path: 'join/list/1/current', name: 'Office of the City Manager', title: 'Announcements', items: []},
+  //{ id: 1, path: 'join/list/1/current', name: 'Office of the City Manager', title: 'Announcements', items: []},
   { id: 3, path: 'join/list/3/current', name: 'Parks, Rec & Culture', title: 'Parks, Rec & Culture', items: []},
   { id: 4, path: 'join/list/4/current', name: 'Public Meetings', title: 'Public Meetings', items: []},
   { id: 5, path: 'join/list/5/current', name: 'Public Safety', title: 'Public Safety - Police', items: []},
