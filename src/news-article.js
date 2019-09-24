@@ -56,7 +56,10 @@ class NewsArticle extends PolymerElement {
       }
 
       #content img {
+        display: block;
+        height: auto !important;
         max-width: 100%;
+        margin: 1rem auto;
       }
 
       #content figure {
@@ -159,10 +162,10 @@ class NewsArticle extends PolymerElement {
 
       <aside>
         <news-share facebook twitter reddit tumblr email url="[[_share(article)]]"></news-share>
-        <news-side-list class="fade-in" items="[[_slice(category.items, 0, 3)]]">
+        <news-side-list class="fade-in" items="[[_slice(articles, 0, 3)]]">
           Most Read
         </news-side-list>
-        <news-side-list class="fade-in" featured items="[[_slice(category.items, 3, 9)]]">
+        <news-side-list class="fade-in" featured items="[[_slice(articles, 3, 9)]]">
           Top Stories
         </news-side-list>
       </aside>
@@ -182,17 +185,18 @@ class NewsArticle extends PolymerElement {
     route: Object,
 
     category: Object,
+    articles: Array,
 
     article: Object,
 
     previousArticle: {
       type: Object,
-      computed: '_computePreviousArticle(category.items, article)'
+      computed: '_computePreviousArticle(articles, article)'
     },
 
     nextArticle: {
       type: Object,
-      computed: '_computeNextArticle(category.items, article)'
+      computed: '_computeNextArticle(articles, article)'
     },
 
     loading: Boolean,
@@ -203,6 +207,7 @@ class NewsArticle extends PolymerElement {
 
     categoryName: {
       type: Boolean,
+      value: true,
       computed: '_return(_routeData.category)',
       notify: true
     },

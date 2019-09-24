@@ -78,6 +78,20 @@ class NewsArticleCover extends PolymerElement {
         margin-left: 30px;
       }
 
+      /* desktop only */
+      @media (min-width: 768px) {
+        .align-left {
+          clear: none;
+          float: left;
+          margin: 0 0 0.214rem 0.214rem;
+        }
+        .align-left {
+          clear: none;
+          float: right;
+          margin: 0 0.214rem 0.214rem 0;
+        }
+      }
+
       /* mobile */
       @media (max-width: 767px) {
         :host {
@@ -147,7 +161,11 @@ class NewsArticleCover extends PolymerElement {
     <div class="cover-text">
       <div class="flex"></div>
       <div>
-        <div class="category">[[article.category]]</div>
+        <dom-repeat items="[[article.category]]">
+          <template>
+            <div class="category">[[item]]</div>
+          </template>
+        </dom-repeat>
       </div>
       <h1>[[article.headline]]<small>[[article.author]]&mdash;<em>[[article.authorTitle]]</em></small></h1>
       <div class="meta">

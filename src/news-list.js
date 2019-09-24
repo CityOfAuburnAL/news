@@ -180,7 +180,10 @@ class NewsList extends PolymerElement {
 
     route: Object,
 
-    category: Object,
+    category: {
+      type: Object,
+      notify: true
+    },
 
     offline: Boolean,
 

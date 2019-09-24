@@ -12,16 +12,67 @@ import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { timeOut } from '@polymer/polymer/lib/utils/async.js';
 
-let apiRoot = 'https://api.auburnalabama.org/pressrelease/';
-let categoryList = [
-  { id: 0, path: 'frontpage', name: 'top_stories', title: 'Top Stories'},
-  { id: 3, path: 'list/Office of the City Manager/50', name: 'Office of the City Manager', title: 'From City Manager'},
-  { id: 4, path: 'list/Parks and Recreation/50', name: 'Parks and Recreation', title: 'Parks and Recreation'},
-  { id: 5, path: 'list/Public Safety - Police/50', name: 'Public Safety - Police', title: 'Police'},
-  //{ id: 6, path: 'list/Planning/12', name: 'Planning', title: 'Planning'},
-  { id: 7, path: 'list/Public Works/12', name: 'Public Works', title: 'Public Works'},
-  { id: 8, path: 'list/Economic Development/12', name: 'Economic Development', title: 'Economic Development'}
+// https://tc39.github.io/ecma262/#sec-array.prototype.findindex
+if (!Array.prototype.findIndex) {
+  Object.defineProperty(Array.prototype, 'findIndex', {
+    value: function(predicate) {
+     // 1. Let O be ? ToObject(this value).
+      if (this == null) {
+        throw new TypeError('"this" is null or not defined');
+      }
+
+      var o = Object(this);
+
+      // 2. Let len be ? ToLength(? Get(O, "length")).
+      var len = o.length >>> 0;
+
+      // 3. If IsCallable(predicate) is false, throw a TypeError exception.
+      if (typeof predicate !== 'function') {
+        throw new TypeError('predicate must be a function');
+      }
+
+      // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
+      var thisArg = arguments[1];
+
+      // 5. Let k be 0.
+      var k = 0;
+
+      // 6. Repeat, while k < len
+      while (k < len) {
+        // a. Let Pk be ! ToString(k).
+        // b. Let kValue be ? Get(O, Pk).
+        // c. Let testResult be ToBoolean(? Call(predicate, T, « kValue, k, O »)).
+        // d. If testResult is true, return k.
+        var kValue = o[k];
+        if (predicate.call(thisArg, kValue, k, o)) {
+          return k;
+        }
+        // e. Increase k by 1.
+        k++;
+      }
+
+      // 7. Return -1.
+      return -1;
+    },
+    configurable: true,
+    writable: true
+  });
+}
+
+// data api docs: https://api2.auburnalabama.org/pressrelease/apidocs/index.html
+let apiRoot = 'https://api2.auburnalabama.org/pressrelease/';
+let displayList = [
+  { id: 7, path: 'join/list/7/current', name: 'Top Stories', title: 'Top Stories', items: []},
+  { id: 2, path: 'join/list/2/current', name: 'City News', title: 'City News', items: []},
+  { id: 1, path: 'join/list/1/current', name: 'Office of the City Manager', title: 'Announcements', items: []},
+  { id: 3, path: 'join/list/3/current', name: 'Parks, Rec & Culture', title: 'Parks, Rec & Culture', items: []},
+  { id: 4, path: 'join/list/4/current', name: 'Public Meetings', title: 'Public Meetings', items: []},
+  { id: 5, path: 'join/list/5/current', name: 'Public Safety', title: 'Public Safety - Police', items: []},
+  { id: 6, path: 'join/list/6/current', name: 'Traffic Advisories', title: 'Traffic Advisories', items: []}
 ];
+// Don't need the old `path` because we're just going to filter all articles.
+// We'll get the lists live but for timing and offline we'll start with this version.
+let categoryList = [{"id":1,"name":"Announcements"},{"id":2,"name":"City News"},{"id":3,"name":"Parks, Rec & Culture"},{"id":4,"name":"Public Meetings"},{"id":5,"name":"Public Safety"},{"id":6,"name":"Traffic Advisories"},{"id":7,"name":"Top Stories"}];
 
 let textarea = document.createElement('textarea');
 
@@ -33,12 +84,21 @@ class NewsData extends PolymerElement {
 
     categories: {
       type: Array,
-      value: categoryList,
-      readOnly: true,
+      value: displayList,
+      // readOnly: true,?
       notify: true
     },
 
-    categoryName: String,
+    articles: {
+      type: Array,
+      value: [],
+      notify: true
+    },
+
+    categoryName: {
+      type: String,
+      value: ''
+    },
 
     articleId: String,
 
@@ -52,14 +112,19 @@ class NewsData extends PolymerElement {
 
     category: {
       type: Object,
-      computed: '_computeCategory(categoryName)',
+      computed: '_computeCategory(articles, categoryName)',
       notify: true
     },
 
     article: {
       type: Object,
-      computed: '_computeArticle(category.items, articleId)',
+      computed: '_computeArticle(articles, articleId)',
       notify: true
+    },
+
+    lists: {
+      type: Array,
+      value: categoryList
     },
 
     failure: {
@@ -71,24 +136,72 @@ class NewsData extends PolymerElement {
   }}
 
   static get observers() { return [
-    '_fetchCategory(category, offline)',
+    //'_fetchCategory(category, offline)',
     '_fetchArticle(article, offline)'
   ]}
 
+  //we're going to rework this completely... onload and offline -> online may update the articles list (which will contain all active articles)
+  // changing the category should filter the list
+  // setting article-id should grab article (then what, prepend to list and display? or just display?)
+  // TODO - let's also get catgoryList so we can match while parsing article data. 
+  ready() {
+    super.ready();
+    console.log('ready')
+    this._fetch(apiRoot + 'current', 
+      (response) => { 
+        console.log(`Fetched ${response.length} articles.`); 
+        let parsedArticles = this._parseAllItems(response);
+        console.log(`Parsed ${parsedArticles.length} articles.`)
+        this.set('articles', parsedArticles);
+        // maybe we should put the articles into their categories so it's like it was?
+        // but does that mean we need to parse them all first? perhaps we just do it while parsing? But what about the ones that aren't supposed to be on the main page? Different priority?
+      },
+      1 /* attempts */);
+    this._fetch(apiRoot + 'list', 
+      (response) => { 
+        //let's remove the ones that are only for website pages?
+        this.set('lists', response.filter(r => r.sitePageID !== 9)); },
+      1 /* attempts */);
+  }
+
   _computeArticle(categoryItems, articleId) {
-    if (!categoryItems || !articleId) {
+    console.log(`compute article: ${articleId}`);
+    if (!categoryItems && !articleId) {
       return null;
     }
     for (let i = 0; i < categoryItems.length; ++i) {
       let article = categoryItems[i];
       if (article.id == articleId) {
+        console.log('Found article');
         return article;
       }
     }
+    console.log('Need to fetch article');
     /* Critical to tell it to fetch the article even though it's not in the list of articles  */
     return {
       id: articleId
     };
+  }
+
+  sortCategoryArticlesFn(a, b) {
+    if (a.priority < b.priority) return -1;
+    return 1;
+  }
+
+  // This needs to go through the news articles and filter based on category....
+  _computeCategory(articles, categoryName) {
+    console.log(`Computing category from ${articles.length} articles.`);
+    // wait for articles
+    if (articles.length === 0) return null;
+    for (let i = 0, c; c = this.categories[i]; ++i) {
+      if (c.name === categoryName) {
+        if (c.items) {
+          c.items.sort(this.sortCategoryArticlesFn);
+        }
+        return c;
+      }
+    }
+    return null;
   }
 
   _fetchArticle(article, offline) {
@@ -104,24 +217,17 @@ class NewsData extends PolymerElement {
       return;
     }
 
+    if (!article.id) return;
     this._fetch(apiRoot + article.id,
       (response) => { 
-        var responseArticle = JSON.parse(response)[0];
+        var responseArticle = JSON.parse(response);
         var parsedArticle = this._parseArticleItem(responseArticle);
-        this.push('category.items', parsedArticle);
+        console.log('Parsed new article');
+        this.push('articles', parsedArticle);
         this.set('articleId', parsedArticle.id);
         //this.set('article.html', this._formatHTML(response)); 
       },
       3 /* attempts */, true /* isRaw */);
-  }
-
-  _computeCategory(categoryName) {
-    for (let i = 0, c; c = this.categories[i]; ++i) {
-      if (c.name === categoryName) {
-        return c;
-      }
-    }
-    return null;
   }
 
   _fetchCategory(category, offline, attempts) {
@@ -131,39 +237,107 @@ class NewsData extends PolymerElement {
       this._setFailure(false);
       return;
     }
-    this._fetch(apiRoot + category.path,
-      (response) => { this.set('category.items', this._parseCategoryItems(response)); },
-      attempts || 1 /* attempts */);
+    // don't grab new ones?
+    // this._fetch(apiRoot + 'current', // category.path,
+    //   (response) => { this.set('category.items', this._parseCategoryItems(response)); },
+    //   attempts || 1 /* attempts */);
+    
+    // Instead, filter from articles?
+    // Or maybe, just set category == to one of the categories?
+
   }
 
-  _parseCategoryItems(response) {
+  // _parseCategoryItems(response) {
+  //   let items = [];
+
+  //   for (let i = 0, item; item = response[i]; ++i) {
+  //     let parsed = this._parseArticleItem(item.pressRelease);
+  //     parsed.priority = response[i].priority;
+  //     items.push(parsed);
+  //   }
+
+  //   return items;
+  // }
+  _parseAllItems(response) {
     let items = [];
 
     for (let i = 0, item; item = response[i]; ++i) {
+      //let parsed = this._parseArticleItem(item); //WTF it breaks without some delay here... worked fine with the spread operator, works fine if you set it twice, set it once and NOPE
+      //parsed.priority = response[i].priority;
       items.push(this._parseArticleItem(item));
+      //items.push({ ...this._parseArticleItem(item), priority: response[i].priority });
+      //console.log(response[i].priority);
+      //items.push({ ...parsed, priority: response[i].priority });
     }
 
     return items;
   }
 
   _parseArticleItem(item) {
-    return {
-        headline: this._unescapeText(item.Title),
-        href: this._getItemHref(item),
-        id: item.PressReleaseID,
-        imageUrl: this._getItemImage(item),
+    if (!item) return; // short circuit parsing nothing, not sure where this is even coming from.
+    // press release LISTS
+    let categoryNames = [];
+    for (let i = 0; i < item.pressReleaseListsJoin.length; i++) {
+      //polyfill for IE?
+      let li = this.lists.findIndex(e => e.id === item.pressReleaseListsJoin[i].pressReleaseListID);
+      if (li !== -1) categoryNames.push(this.lists[li].name);
+    }
+    // PHONE
+    if (item.pressContact && item.pressContact.phone && item.pressContact.phone.length === 4)
+      item.pressContact.phone = '334501' + item.pressContact.phone;
+    // make article object
+    let article = {
+        headline: this._unescapeText(item.name),
+        // reworked?
+        href: `/article/${categoryNames[0] || 'news'}/${item.id}`,// this._getItemHref(item),
+        id: item.id,
+        imageUrl: item.coverImage,// this._getItemImage(item),
+        // TODO - rework
         placeholder: item.placeholder || "data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAAA8AAD/4QMxaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLwA8P3hwYWNrZXQgYmVnaW49Iu+7vyIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/PiA8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJBZG9iZSBYTVAgQ29yZSA1LjYtYzExMSA3OS4xNTgzMjUsIDIwMTUvMDkvMTAtMDE6MTA6MjAgICAgICAgICI+IDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+IDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIiB4bWxuczpzdFJlZj0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL1Jlc291cmNlUmVmIyIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjJFNTQzRDI0QTM4RTExRTY5NjdCRDcxN0ZDQzkwNzU3IiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjJFNTQzRDIzQTM4RTExRTY5NjdCRDcxN0ZDQzkwNzU3IiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCBDQyAyMDE1IChNYWNpbnRvc2gpIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6MUYyN0U2RkRBMzg3MTFFNjk2N0JENzE3RkNDOTA3NTciIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MUYyN0U2RkVBMzg3MTFFNjk2N0JENzE3RkNDOTA3NTciLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz7/7gAmQWRvYmUAZMAAAAABAwAVBAMGCg0AAATiAAAFEgAABUsAAAV4/9sAhAAGBAQEBQQGBQUGCQYFBgkLCAYGCAsMCgoLCgoMEAwMDAwMDBAMDg8QDw4MExMUFBMTHBsbGxwfHx8fHx8fHx8fAQcHBw0MDRgQEBgaFREVGh8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx//wgARCAAGAAoDAREAAhEBAxEB/8QAhwABAQAAAAAAAAAAAAAAAAAABQYBAQAAAAAAAAAAAAAAAAAAAAAQAAIDAQAAAAAAAAAAAAAAABADAAEEJBEAAQMDBQAAAAAAAAAAAAAAAgABEdESA0JiEzOjEgEAAAAAAAAAAAAAAAAAAAAQEwEAAgIDAQAAAAAAAAAAAAABEBEhMQBRkaH/2gAMAwEAAhEDEQAAAa0WP//aAAgBAQABBQLWp97OKf/aAAgBAgABBQIf/9oACAEDAAEFAh//2gAIAQICBj8CP//aAAgBAwIGPwI//9oACAEBAQY/ArgzEOOG5QZim3bDLT1eVF//2gAIAQEDAT8hYJl0gXNk3nWYR//aAAgBAgMBPyGP/9oACAEDAwE/IY//2gAMAwEAAhEDEQAAEEP/2gAIAQEDAT8Qf2TjokQgNtX5fTw4f//aAAgBAgMBPxCP/9oACAEDAwE/EI//2Q==",
-        category: item.List ? item.List.ListName : '',
-        timeAgo: this._timeAgo(new Date(item.DateAdded).getTime()),
-        author: item.ContactPerson,
-        authorPhone: item.ContactPhone.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3'),
-        authorTitle: item.ContactTitle,
-        summary: this._trimRight(item.Summary, 100),
-        html: this._formatHTML(item.PressRelease),
-        mainPriority: item.MainPagePriority,
-        priority: item.Priority,
-        readTime: Math.max(1, Math.round(item.SearchableContent.length / 3000)) + ' min read'
+        // reworked?
+        category: item.pressReleaseListsJoin ? categoryNames : [],
+        timeAgo: this._timeAgo(new Date(item.publishDate).getTime()),
+        author: item.pressContact.name,
+        // reworked? for 4 digit data
+        authorPhone: item.pressContact.phone ? item.pressContact.phone.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3') : '',
+        authorTitle: item.pressContact.title,
+        // TODO - check `100` in UI, set to 500 in db
+        summary: this._trimRight(item.blurb, 100),
+        // TODO - rework - shouldn't need to format, at least not as much
+        html: item.content, // this._formatHTML(item.content),
+        // TODO - rework
+        mainPriority: 0, //item.MainPagePriority,
+        // TODO - rework
+        priority: 0, //item.Priority,
+        // TODO - rework as we now have HTML, no simple string data field
+        readTime: Math.max(1, Math.round(item.content.length / 3000)) + ' min read'
       };
+    //put article into displayCategory pages?
+    if (this.categories) {
+      let minPriority = 100;
+      let maxCategoryIndex = null;
+      for (let i = 0; i < item.pressReleaseListsJoin.length; i++) {
+        //polyfill for IE?
+        let c = this.categories.findIndex(e => e.id === item.pressReleaseListsJoin[i].pressReleaseListID);
+        if (c !== -1) {
+          let catArticle = JSON.stringify(article); 
+          catArticle = JSON.parse(catArticle); // ALL BECAUSE TO SUPPORT IE we can't use object spread
+          catArticle.priority = item.pressReleaseListsJoin[i].priority;
+          this.categories[c].items.push(catArticle);
+          //this.categories[c].items.push({ ...article, priority: item.pressReleaseListsJoin[i].priority });
+          if (item.pressReleaseListsJoin[i].priority < minPriority) maxCategoryIndex = c;
+        }
+      }
+      // set a category if none exists, the alternative is to change what news-article sets for the aside lists
+      if (!this.category && maxCategoryIndex) {
+        this.set('category', this.categories[maxCategoryIndex]);
+        this.set('category.items', this.categories[maxCategoryIndex].items);
+        //do I also need to set category.items... or will it come through?
+      }
+    }
+
+    // return
+    return article;
   }
 
   _unescapeText(text) {

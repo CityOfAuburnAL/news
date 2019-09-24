@@ -111,7 +111,6 @@ class NewsListItem extends PolymerElement {
     <a href\$="[[item.href]]">
       <news-img src="[[item.imageUrl]]" alt="[[item.headline]]"></news-img>
       <div class="headline">
-        <div class="category" hidden\$="[[!item.category]]">[[item.category]]</div>
         <h2>[[item.headline]]</h2>
         <div class="details">
           <div class="time-ago">[[item.timeAgo]]</div>

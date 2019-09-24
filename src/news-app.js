@@ -100,7 +100,7 @@ class NewsApp extends PolymerElement {
     <!--
       news-data provides the list of categories and the articles for the category.
     -->
-    <news-data id="data" categories="{{categories}}" category-name="[[categoryName]]" category="{{category}}" article-id="[[articleId]]" article="{{article}}" loading="{{loading}}" offline="[[offline]]" failure="{{failure}}"></news-data>
+    <news-data id="data" categories="{{categories}}" category-name="[[categoryName]]" category="{{category}}" articles="{{articles}}" article-id="[[articleId]]" article="{{article}}" loading="{{loading}}" offline="[[offline]]" failure="{{failure}}"></news-data>
 
     <news-nav id="nav" app-title="[[appTitle]]" page="[[page]]" categories="[[categories]]" category="[[category]]" load-complete="[[loadComplete]]">
       [[articleHeadline]]
@@ -110,7 +110,7 @@ class NewsApp extends PolymerElement {
       <!-- list view of articles in a category -->
       <news-list id="list" name="list" route="[[subroute]]" category-name="{{categoryName}}" category="[[category]]" loading="[[loading]]" offline="[[offline]]" failure="[[failure]]"></news-list>
       <!-- article view -->
-      <news-article name="article" route="{{subroute}}" category-name="{{categoryName}}" category="[[category]]" article-id="{{articleId}}" article="[[article]]" loading="[[loading]]" offline="[[offline]]" failure="[[failure]]"></news-article>
+      <news-article name="article" route="{{subroute}}" category-name="{{categoryName}}" category="[[category]]" articles="[[articles]]" article-id="{{articleId}}" article="[[article]]" loading="[[loading]]" offline="[[offline]]" failure="[[failure]]"></news-article>
       <!-- invalid top level paths -->
       <news-path-warning name="path-warning"></news-path-warning>
 
@@ -140,6 +140,7 @@ class NewsApp extends PolymerElement {
     categoryName: String,
 
     category: Object,
+    articles: Array,
 
     articleId: String,
 
@@ -203,7 +204,7 @@ class NewsApp extends PolymerElement {
     }
     if (!page) {
       // set default route if route path is empty
-      this.set('route.path', 'list/top_stories');
+      this.set('route.path', 'list/Top Stories');
       return;
     }
     this.page = page;
@@ -281,7 +282,7 @@ class NewsApp extends PolymerElement {
   }
 
   _setPageMetadata(description, article) {
-    let image = article ? article.imageUrl : 'images/news-icon-128.png';
+    let image = article && article.imageUrl ? article.imageUrl : 'images/news-icon-128.png';
 
     // Set open graph metadata
     this._setMeta('property', 'og:title', document.title);

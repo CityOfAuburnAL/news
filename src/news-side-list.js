@@ -58,7 +58,7 @@ class NewsSideList extends PolymerElement {
 
       :host([featured]) .headline {
         display: block;
-        margin: 20px 0;
+        margin: 20px 0 12px 0;
       }
 
       :host([featured]) .time-ago {
@@ -73,7 +73,7 @@ class NewsSideList extends PolymerElement {
     <dom-repeat items="[[items]]">
       <template>
         <a href\$="[[item.href]]">
-          <div class="category">[[item.category]]</div>
+          <!--<div class="category">[[item.category]]</div>-->
           <span class="headline">[[item.headline]]</span>
           <span class="time-ago">[[item.timeAgo]]</span>
         </a>
