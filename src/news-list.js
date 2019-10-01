@@ -141,7 +141,7 @@ class NewsList extends PolymerElement {
         </news-list-featured-item>
 
         <ul class="app-grid article-grid fade-in">
-          <dom-repeat items="[[_slice(category.items, 1, 50)]]" filter="_filterPriorityItems">
+          <dom-repeat items="[[_slice(category.items, 1, 50)]]">
             <template>
               <li>
                 <news-list-item item="[[item]]"></news-list-item>
