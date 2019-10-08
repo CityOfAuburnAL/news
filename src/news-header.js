@@ -273,7 +273,7 @@ class NewsHeader extends PolymerElement {
       }
       
       @media only print {
-        paper-icon-button, iron-selector {
+        paper-icon-button, iron-selector, .menu-list {
           display: none;
         }
       }
