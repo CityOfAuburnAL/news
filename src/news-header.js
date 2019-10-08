@@ -271,7 +271,12 @@ class NewsHeader extends PolymerElement {
           transform: translate3d(0, 100%, 0);
         }
       }
-
+      
+      @media only print {
+        paper-icon-button {
+          display: none;
+        }
+      }
     </style>
 
     <!--

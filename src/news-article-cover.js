@@ -156,6 +156,19 @@ class NewsArticleCover extends PolymerElement {
           max-height: calc(var(--viewport-height) * 0.49);
         }
       }
+      
+      @media only print {
+        :host {
+          background: #FFF;
+        }
+        .cover-text {
+          color: #000;
+          height: auto;
+        }
+        .cover-img-container, .cover-text .flex {
+          display: none;
+        }
+      }
     </style>
 
     <div class="cover-text">

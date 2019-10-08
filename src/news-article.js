@@ -145,6 +145,12 @@ class NewsArticle extends PolymerElement {
           max-height: calc(var(--viewport-height) * 0.49);
         }
       }
+      
+      @media only print {
+        news-share {
+          display: none;
+        }
+      }
     </style>
 
     <app-route
