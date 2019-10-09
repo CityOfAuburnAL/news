@@ -371,7 +371,11 @@ class NewsData extends PolymerElement {
     if (hours < 48)
       return '1 day ago';
 
-    return Math.floor(hours / 24) + ' days ago';
+    let days = hours / 24;
+    if (days < 9)
+      return Math.floor(days) + ' days ago';
+    
+    return (new Date(timestamp)).toLocaleDateString();
   }
 
   _trimRight(text, maxLength) {
