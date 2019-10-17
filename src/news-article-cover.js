@@ -66,7 +66,7 @@ class NewsArticleCover extends PolymerElement {
         display: block;
         width: 100%;
         height: auto;
-        min-height: 60vh;
+        min-height: 60vmax;
         object-fit: cover;
       }
 
