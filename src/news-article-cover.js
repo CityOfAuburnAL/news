@@ -67,6 +67,7 @@ class NewsArticleCover extends PolymerElement {
         width: 100%;
         height: auto;
         min-height: 60vh;
+        min-height: 60vm;
         min-height: 60vmax;
         object-fit: cover;
       }
@@ -166,7 +167,10 @@ class NewsArticleCover extends PolymerElement {
           color: #000;
           height: auto;
         }
-        .cover-img-container, .cover-text .flex {
+        .cover-img-container {
+          position: relative;
+        }
+        .cover-text .flex {
           display: none;
         }
       }
