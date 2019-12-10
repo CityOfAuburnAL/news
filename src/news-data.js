@@ -358,16 +358,17 @@ class NewsData extends PolymerElement {
       return ''
 
     let minutes = (Date.now() - timestamp) / 1000 / 60;
-    if (minutes < 2)
-      return '1 min ago';
-    if (minutes < 60)
-      return Math.floor(minutes) + ' mins ago';
-    if (minutes < 120)
-      return '1 hour ago';
+    // if (minutes < 2)
+    //   return '1 min ago';
+    // if (minutes < 60)
+    //   return Math.floor(minutes) + ' mins ago';
+    // if (minutes < 120)
+    //   return '1 hour ago';
 
     let hours = minutes / 60;
     if (hours < 24)
-      return Math.floor(hours) + ' hours ago';
+      return 'Today';
+      //return Math.floor(hours) + ' hours ago';
     if (hours < 48)
       return '1 day ago';
 
