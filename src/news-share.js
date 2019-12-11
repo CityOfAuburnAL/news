@@ -201,7 +201,9 @@ class NewsShare extends PolymerElement {
     }}
 
     _cleanUrl(url) {
-        return url.replace(/ /g, '%2520').replace(/%20/g, '%2520');
+        return url.replace(/ /g, '%2520')
+                    .replace(/%20/g, '%2520')
+                    .replace(/&/g, '%26'); //encode ampersand (Parks & Rec)
     }
 
     _share(event) {
